@@ -5,10 +5,9 @@
 #include <utility>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
-#include "hdf5.h"
-#include "leveldb/db.h"
-#include "lmdb.h"
+//#include "hdf5.h"
+//#include "leveldb/db.h"
+//#include "lmdb.h"
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
@@ -24,7 +23,7 @@ namespace caffe {
 
 // TODO: DataLayer, ImageDataLayer, and WindowDataLayer all have the
 // same basic structure and a lot of duplicated code.
-
+/*
 template <typename Dtype>
 class DataLayer : public Layer<Dtype>, public InternalThread {
  public:
@@ -173,7 +172,7 @@ class HDF5OutputLayer : public Layer<Dtype> {
   Blob<Dtype> data_blob_;
   Blob<Dtype> label_blob_;
 };
-
+*/
 template <typename Dtype>
 class ImageDataLayer : public Layer<Dtype>, public InternalThread {
  public:
@@ -221,6 +220,7 @@ class ImageDataLayer : public Layer<Dtype>, public InternalThread {
 
 /* MemoryDataLayer
 */
+/*
 template <typename Dtype>
 class MemoryDataLayer : public Layer<Dtype> {
  public:
@@ -301,7 +301,7 @@ class WindowDataLayer : public Layer<Dtype>, public InternalThread {
   vector<vector<float> > fg_windows_;
   vector<vector<float> > bg_windows_;
 };
-
+*/
 }  // namespace caffe
 
 #endif  // CAFFE_DATA_LAYERS_HPP_

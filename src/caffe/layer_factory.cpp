@@ -27,22 +27,22 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     return new ConcatLayer<Dtype>(param);
   case LayerParameter_LayerType_CONVOLUTION:
     return new ConvolutionLayer<Dtype>(param);
-  case LayerParameter_LayerType_DATA:
-    return new DataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_DATA:
+  //   return new DataLayer<Dtype>(param);
   case LayerParameter_LayerType_DROPOUT:
     return new DropoutLayer<Dtype>(param);
-  case LayerParameter_LayerType_DUMMY_DATA:
-    return new DummyDataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_DUMMY_DATA:
+  //   return new DummyDataLayer<Dtype>(param);
   case LayerParameter_LayerType_EUCLIDEAN_LOSS:
     return new EuclideanLossLayer<Dtype>(param);
   case LayerParameter_LayerType_ELTWISE:
     return new EltwiseLayer<Dtype>(param);
   case LayerParameter_LayerType_FLATTEN:
     return new FlattenLayer<Dtype>(param);
-  case LayerParameter_LayerType_HDF5_DATA:
-    return new HDF5DataLayer<Dtype>(param);
-  case LayerParameter_LayerType_HDF5_OUTPUT:
-    return new HDF5OutputLayer<Dtype>(param);
+  // case LayerParameter_LayerType_HDF5_DATA:
+  //   return new HDF5DataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_HDF5_OUTPUT:
+  //   return new HDF5OutputLayer<Dtype>(param);
   case LayerParameter_LayerType_HINGE_LOSS:
     return new HingeLossLayer<Dtype>(param);
   case LayerParameter_LayerType_IMAGE_DATA:
@@ -55,8 +55,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     return new InnerProductLayer<Dtype>(param);
   case LayerParameter_LayerType_LRN:
     return new LRNLayer<Dtype>(param);
-  case LayerParameter_LayerType_MEMORY_DATA:
-    return new MemoryDataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_MEMORY_DATA:
+  //   return new MemoryDataLayer<Dtype>(param);
   case LayerParameter_LayerType_MULTINOMIAL_LOGISTIC_LOSS:
     return new MultinomialLogisticLossLayer<Dtype>(param);
   case LayerParameter_LayerType_POOLING:
@@ -79,8 +79,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     return new SplitLayer<Dtype>(param);
   case LayerParameter_LayerType_TANH:
     return new TanHLayer<Dtype>(param);
-  case LayerParameter_LayerType_WINDOW_DATA:
-    return new WindowDataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_WINDOW_DATA:
+  //   return new WindowDataLayer<Dtype>(param);
   case LayerParameter_LayerType_NONE:
     LOG(FATAL) << "Layer " << name << " has unspecified type.";
   default:

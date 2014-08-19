@@ -70,6 +70,7 @@ class GaussianFiller : public Filler<Dtype> {
         Dtype(this->filler_param_.std()), blob->mutable_cpu_data());
     int sparse = this->filler_param_.sparse();
     CHECK_GE(sparse, -1);
+
     if (sparse >= 0) {
       // Sparse initialization is implemented for "weight" blobs; i.e. matrices.
       // These have num == channels == 1; height is number of inputs; width is
