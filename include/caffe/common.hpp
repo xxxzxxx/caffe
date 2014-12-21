@@ -1,10 +1,9 @@
 #ifndef CAFFE_COMMON_HPP_
 #define CAFFE_COMMON_HPP_
 
-#include <boost/shared_ptr.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
+#include "caffe/glog_alternate.hpp"
 
+#include <memory>
 #include <cmath>
 #include <fstream>  // NOLINT(readability/streams)
 #include <iostream>  // NOLINT(readability/streams)
@@ -16,15 +15,6 @@
 #include <vector>
 
 #include "caffe/util/device_alternate.hpp"
-
-// gflags 2.1 issue: namespace google was changed to gflags without warning.
-// Luckily we will be able to use GFLAGS_GFAGS_H_ to detect if it is version
-// 2.1. If yes , we will add a temporary solution to redirect the namespace.
-// TODO(Yangqing): Once gflags solves the problem in a more elegant way, let's
-// remove the following hack.
-#ifndef GFLAGS_GFLAGS_H_
-namespace gflags = google;
-#endif  // GFLAGS_GFLAGS_H_
 
 // Disable the copy and assignment operator for a class.
 #define DISABLE_COPY_AND_ASSIGN(classname) \
@@ -43,11 +33,8 @@ private:\
 
 namespace caffe {
 
-// We will use the boost shared_ptr instead of the new C++11 one mainly
-// because cuda does not work (at least now) well with C++11 features.
-using boost::shared_ptr;
-
 // Common functions and classes from std that caffe often uses.
+using std::shared_ptr;
 using std::fstream;
 using std::ios;
 using std::isnan;

@@ -193,8 +193,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     return new ContrastiveLossLayer<Dtype>(param);
   case LayerParameter_LayerType_CONVOLUTION:
     return GetConvolutionLayer<Dtype>(name, param);
-  case LayerParameter_LayerType_DATA:
-    return new DataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_DATA:
+  //   return new DataLayer<Dtype>(param);
   case LayerParameter_LayerType_DROPOUT:
     return new DropoutLayer<Dtype>(param);
   case LayerParameter_LayerType_DUMMY_DATA:
@@ -205,10 +205,10 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     return new EltwiseLayer<Dtype>(param);
   case LayerParameter_LayerType_FLATTEN:
     return new FlattenLayer<Dtype>(param);
-  case LayerParameter_LayerType_HDF5_DATA:
-    return new HDF5DataLayer<Dtype>(param);
-  case LayerParameter_LayerType_HDF5_OUTPUT:
-    return new HDF5OutputLayer<Dtype>(param);
+  // case LayerParameter_LayerType_HDF5_DATA:
+  //   return new HDF5DataLayer<Dtype>(param);
+  // case LayerParameter_LayerType_HDF5_OUTPUT:
+  //   return new HDF5OutputLayer<Dtype>(param);
   case LayerParameter_LayerType_HINGE_LOSS:
     return new HingeLossLayer<Dtype>(param);
   case LayerParameter_LayerType_IMAGE_DATA:

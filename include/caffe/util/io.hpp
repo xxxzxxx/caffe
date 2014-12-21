@@ -5,19 +5,19 @@
 #include <string>
 
 #include "google/protobuf/message.h"
-#include "hdf5.h"
-#include "hdf5_hl.h"
+//#include "hdf5.h"
+//#include "hdf5_hl.h"
 
 #include "caffe/blob.hpp"
 #include "caffe/proto/caffe.pb.h"
-
+/*
 #define HDF5_NUM_DIMS 4
 
 namespace leveldb {
 // Forward declaration for leveldb::Options to be used in GetlevelDBOptions().
 struct Options;
 }
-
+*/
 namespace caffe {
 
 using ::google::protobuf::Message;
@@ -101,7 +101,7 @@ inline bool ReadImageToDatum(const string& filename, const int label,
     Datum* datum) {
   return ReadImageToDatum(filename, label, 0, 0, datum);
 }
-
+/*
 leveldb::Options GetLevelDBOptions();
 
 template <typename Dtype>
@@ -117,7 +117,7 @@ void hdf5_load_nd_dataset(
 template <typename Dtype>
 void hdf5_save_nd_dataset(
   const hid_t file_id, const string dataset_name, const Blob<Dtype>& blob);
-
+*/
 }  // namespace caffe
 
 #endif   // CAFFE_UTIL_IO_H_

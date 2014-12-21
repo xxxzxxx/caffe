@@ -1,4 +1,4 @@
-#include <glog/logging.h>
+#include "caffe/glog_alternate.hpp"
 #include <cstdio>
 #include <ctime>
 
@@ -8,6 +8,8 @@
 namespace caffe {
 
 shared_ptr<Caffe> Caffe::singleton_;
+nullstream __nullstream;
+bool LogMessage::enable = false;
 
 // random seeding
 int64_t cluster_seedgen(void) {
@@ -31,10 +33,6 @@ int64_t cluster_seedgen(void) {
 
 
 void GlobalInit(int* pargc, char*** pargv) {
-  // Google flags.
-  ::gflags::ParseCommandLineFlags(pargc, pargv, true);
-  // Google logging.
-  ::google::InitGoogleLogging(*(pargv)[0]);
 }
 
 #ifdef CPU_ONLY  // CPU-only Caffe.
