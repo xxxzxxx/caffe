@@ -12,7 +12,7 @@ layers {
   }
   transform_param {
     crop_size: 227
-    mean_file: "imagenet_mean.binaryproto"
+    mean_file: "/sdcard/caffe_mobile/imagenet_mean.binaryproto"
     mirror: false
   }
   include: { phase: TEST }
@@ -222,13 +222,4 @@ layers {
   type: SOFTMAX
   bottom: "fc8"
   top: "prob"
-}
-layers {
-  name: "output"
-  type: ARGMAX
-  bottom: "prob"
-  top: "output"
-  argmax_param {
-    top_k: 3
-  }
 }
