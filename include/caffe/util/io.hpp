@@ -10,6 +10,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "mkdtemp.h" // mkdtemp() isn't declared in <stdlib.h> of NDK r9
 /*
 #define HDF5_NUM_DIMS 4
 
