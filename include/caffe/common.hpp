@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <utility>  // pair
+#include <tuple>  // std::tuple, std::get, std::tie, std::ignore
 #include <vector>
 
 #include "caffe/util/device_alternate.hpp"
@@ -81,9 +82,11 @@ using std::isnan;
 using std::isinf;
 using std::iterator;
 using std::make_pair;
+using std::make_tuple;
 using std::map;
 using std::ostringstream;
 using std::pair;
+using std::tuple;
 using std::set;
 using std::string;
 using std::stringstream;

@@ -243,6 +243,33 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
 };
 
 /**
+ * @brief Provides data to the Net from image files.
+ *
+ * TODO(dox): thorough documentation for Forward and proto params.
+ */
+template <typename Dtype>
+class NoisyImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
+ public:
+  explicit NoisyImageDataLayer(const LayerParameter& param)
+      : BasePrefetchingDataLayer<Dtype>(param) {}
+  virtual ~NoisyImageDataLayer();
+  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "NoisyImageData"; }
+  virtual inline int ExactNumBottomBlobs() const { return 0; }
+  virtual inline int ExactNumTopBlobs() const { return 2; }
+
+ protected:
+  shared_ptr<Caffe::RNG> prefetch_rng_;
+  virtual void ShuffleImages();
+  virtual void InternalThreadEntry();
+
+  vector<std::tuple<std::string, int, int> > lines_;
+  int lines_id_;
+};
+
+/**
  * @brief Provides data to the Net from memory.
  *
  * TODO(dox): thorough documentation for Forward and proto params.
