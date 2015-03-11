@@ -33,15 +33,15 @@ class NoisyImageDataLayerTest : public MultiDeviceTest<TypeParam> {
     std::ofstream outfile(filename_.c_str(), std::ofstream::out);
     LOG(INFO) << "Using temporary file " << filename_;
     for (int i = 0; i < 5; ++i) {
-      outfile << EXAMPLES_SOURCE_DIR "images/cat.jpg " << i << (5 - i);
+      outfile << EXAMPLES_SOURCE_DIR "images/cat.jpg " << i << " " << (5 - i) << std::endl;
     }
     outfile.close();
     // Create test input file for images of distinct sizes.
     MakeTempFilename(&filename_reshape_);
     std::ofstream reshapefile(filename_reshape_.c_str(), std::ofstream::out);
     LOG(INFO) << "Using temporary file " << filename_reshape_;
-    reshapefile << EXAMPLES_SOURCE_DIR "images/cat.jpg " << 0 << 2;
-    reshapefile << EXAMPLES_SOURCE_DIR "images/fish-bike.jpg " << 1 << 3;
+    reshapefile << EXAMPLES_SOURCE_DIR "images/cat.jpg " << 0 << " " << 2  << std::endl;
+    reshapefile << EXAMPLES_SOURCE_DIR "images/fish-bike.jpg " << 1 << " " << 3  << std::endl;
     reshapefile.close();
   }
 
@@ -64,11 +64,11 @@ TYPED_TEST_CASE(NoisyImageDataLayerTest, TestDtypesAndDevices);
 TYPED_TEST(NoisyImageDataLayerTest, TestRead) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter param;
-  ImageDataParameter* image_data_param = param.mutable_image_data_param();
-  image_data_param->set_batch_size(5);
-  image_data_param->set_source(this->filename_.c_str());
-  image_data_param->set_shuffle(false);
-  ImageDataLayer<Dtype> layer(param);
+  NoisyImageDataParameter* noisy_image_data_param = param.mutable_noisy_image_data_param();
+  noisy_image_data_param->set_batch_size(5);
+  noisy_image_data_param->set_source(this->filename_.c_str());
+  noisy_image_data_param->set_shuffle(false);
+  NoisyImageDataLayer<Dtype> layer(param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   EXPECT_EQ(this->blob_top_data_->num(), 5);
   EXPECT_EQ(this->blob_top_data_->channels(), 3);
@@ -82,8 +82,8 @@ TYPED_TEST(NoisyImageDataLayerTest, TestRead) {
   for (int iter = 0; iter < 2; ++iter) {
     layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
     for (int i = 0; i < 5; ++i) {
-      EXPECT_EQ(i, this->blob_top_label_->cpu_data()[i][0]);
-      EXPECT_EQ(5 - i, this->blob_top_label_->cpu_data()[i][1]);
+      EXPECT_EQ(i, this->blob_top_label_->data_at(i, 0, 0, 0));
+      EXPECT_EQ(5 - i, this->blob_top_label_->data_at(i, 1, 0, 0));
     }
   }
 }
@@ -91,13 +91,13 @@ TYPED_TEST(NoisyImageDataLayerTest, TestRead) {
 TYPED_TEST(NoisyImageDataLayerTest, TestResize) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter param;
-  ImageDataParameter* image_data_param = param.mutable_image_data_param();
-  image_data_param->set_batch_size(5);
-  image_data_param->set_source(this->filename_.c_str());
-  image_data_param->set_new_height(256);
-  image_data_param->set_new_width(256);
-  image_data_param->set_shuffle(false);
-  ImageDataLayer<Dtype> layer(param);
+  NoisyImageDataParameter* noisy_image_data_param = param.mutable_noisy_image_data_param();
+  noisy_image_data_param->set_batch_size(5);
+  noisy_image_data_param->set_source(this->filename_.c_str());
+  noisy_image_data_param->set_new_height(256);
+  noisy_image_data_param->set_new_width(256);
+  noisy_image_data_param->set_shuffle(false);
+  NoisyImageDataLayer<Dtype> layer(param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   EXPECT_EQ(this->blob_top_data_->num(), 5);
   EXPECT_EQ(this->blob_top_data_->channels(), 3);
@@ -111,8 +111,8 @@ TYPED_TEST(NoisyImageDataLayerTest, TestResize) {
   for (int iter = 0; iter < 2; ++iter) {
     layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
     for (int i = 0; i < 5; ++i) {
-      EXPECT_EQ(i, this->blob_top_label_->cpu_data()[i][0]);
-      EXPECT_EQ(5 - i, this->blob_top_label_->cpu_data()[i][1]);
+      EXPECT_EQ(i, this->blob_top_label_->data_at(i, 0, 0, 0));
+      EXPECT_EQ(5 - i, this->blob_top_label_->data_at(i, 1, 0, 0));
     }
   }
 }
@@ -120,11 +120,11 @@ TYPED_TEST(NoisyImageDataLayerTest, TestResize) {
 TYPED_TEST(NoisyImageDataLayerTest, TestReshape) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter param;
-  ImageDataParameter* image_data_param = param.mutable_image_data_param();
-  image_data_param->set_batch_size(1);
-  image_data_param->set_source(this->filename_reshape_.c_str());
-  image_data_param->set_shuffle(false);
-  ImageDataLayer<Dtype> layer(param);
+  NoisyImageDataParameter* noisy_image_data_param = param.mutable_noisy_image_data_param();
+  noisy_image_data_param->set_batch_size(1);
+  noisy_image_data_param->set_source(this->filename_reshape_.c_str());
+  noisy_image_data_param->set_shuffle(false);
+  NoisyImageDataLayer<Dtype> layer(param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   EXPECT_EQ(this->blob_top_label_->num(), 1);
   EXPECT_EQ(this->blob_top_label_->channels(), 2);
@@ -147,11 +147,11 @@ TYPED_TEST(NoisyImageDataLayerTest, TestReshape) {
 TYPED_TEST(NoisyImageDataLayerTest, TestShuffle) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter param;
-  ImageDataParameter* image_data_param = param.mutable_image_data_param();
-  image_data_param->set_batch_size(5);
-  image_data_param->set_source(this->filename_.c_str());
-  image_data_param->set_shuffle(true);
-  ImageDataLayer<Dtype> layer(param);
+  NoisyImageDataParameter* noisy_image_data_param = param.mutable_noisy_image_data_param();
+  noisy_image_data_param->set_batch_size(5);
+  noisy_image_data_param->set_source(this->filename_.c_str());
+  noisy_image_data_param->set_shuffle(true);
+  NoisyImageDataLayer<Dtype> layer(param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   EXPECT_EQ(this->blob_top_data_->num(), 5);
   EXPECT_EQ(this->blob_top_data_->channels(), 3);
@@ -167,7 +167,7 @@ TYPED_TEST(NoisyImageDataLayerTest, TestShuffle) {
     map<Dtype, int> values_to_indices;
     int num_in_order = 0;
     for (int i = 0; i < 5; ++i) {
-      Dtype value = this->blob_top_label_->cpu_data()[i][0];
+      Dtype value = this->blob_top_label_->data_at(i, 0, 0, 0);
       // Check that the value has not been seen already (no duplicates).
       EXPECT_EQ(values_to_indices.find(value), values_to_indices.end());
       values_to_indices[value] = i;

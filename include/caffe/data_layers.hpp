@@ -265,7 +265,7 @@ class NoisyImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual void ShuffleImages();
   virtual void InternalThreadEntry();
 
-  vector<std::tuple<std::string, int, int> > lines_;
+  vector<boost::tuple<std::string, int, int> > lines_;
   int lines_id_;
 };
 

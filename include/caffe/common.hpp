@@ -2,6 +2,7 @@
 #define CAFFE_COMMON_HPP_
 
 #include <boost/shared_ptr.hpp>
+#include "boost/tuple/tuple.hpp"
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
@@ -14,7 +15,6 @@
 #include <sstream>
 #include <string>
 #include <utility>  // pair
-#include <tuple>  // std::tuple, std::get, std::tie, std::ignore
 #include <vector>
 
 #include "caffe/util/device_alternate.hpp"
@@ -75,6 +75,9 @@ namespace caffe {
 // because cuda does not work (at least now) well with C++11 features.
 using boost::shared_ptr;
 
+using boost::tuple;
+using boost::make_tuple;
+
 // Common functions and classes from std that caffe often uses.
 using std::fstream;
 using std::ios;
@@ -82,11 +85,9 @@ using std::isnan;
 using std::isinf;
 using std::iterator;
 using std::make_pair;
-using std::make_tuple;
 using std::map;
 using std::ostringstream;
 using std::pair;
-using std::tuple;
 using std::set;
 using std::string;
 using std::stringstream;

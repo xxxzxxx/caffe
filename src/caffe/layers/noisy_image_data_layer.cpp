@@ -38,7 +38,7 @@ void NoisyImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
   string filename;
   int label, label_d;
   while (infile >> filename >> label >> label_d) {
-    lines_.push_back(std::make_tuple(filename, label, label_d));
+    lines_.push_back(boost::make_tuple(filename, label, label_d));
   }
 
   if (this->layer_param_.noisy_image_data_param().shuffle()) {
@@ -60,7 +60,7 @@ void NoisyImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
     lines_id_ = skip;
   }
   // Read an image, and use it to initialize the top blob.
-  cv::Mat cv_img = ReadImageToCVMat(root_folder + std::get<0>(lines_[lines_id_]),
+  cv::Mat cv_img = ReadImageToCVMat(root_folder + boost::get<0>(lines_[lines_id_]),
                                     new_height, new_width, is_color);
   const int channels = cv_img.channels();
   const int height = cv_img.rows;
@@ -82,8 +82,8 @@ void NoisyImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
       << top[0]->width();
   // label
   vector<int> label_shape(2);
-  label_shape.push_back(batch_size);
-  label_shape.push_back(2); // label and label_d
+  label_shape[0] = batch_size;
+  label_shape[1] = 2; // label and label_d
   top[1]->Reshape(label_shape);
   this->prefetch_label_.Reshape(label_shape);
 }
@@ -105,7 +105,7 @@ void NoisyImageDataLayer<Dtype>::InternalThreadEntry() {
   CPUTimer timer;
   CHECK(this->prefetch_data_.count());
   CHECK(this->transformed_data_.count());
-  ImageDataParameter noisy_image_data_param = this->layer_param_.noisy_image_data_param();
+  NoisyImageDataParameter noisy_image_data_param = this->layer_param_.noisy_image_data_param();
   const int batch_size = noisy_image_data_param.batch_size();
   const int new_height = noisy_image_data_param.new_height();
   const int new_width = noisy_image_data_param.new_width();
@@ -115,7 +115,7 @@ void NoisyImageDataLayer<Dtype>::InternalThreadEntry() {
 
   // Reshape on single input batches for inputs of varying dimension.
   if (batch_size == 1 && crop_size == 0 && new_height == 0 && new_width == 0) {
-    cv::Mat cv_img = ReadImageToCVMat(root_folder + std::get<0>(lines_[lines_id_]),
+    cv::Mat cv_img = ReadImageToCVMat(root_folder + boost::get<0>(lines_[lines_id_]),
         0, 0, is_color);
     this->prefetch_data_.Reshape(1, cv_img.channels(),
         cv_img.rows, cv_img.cols);
@@ -132,9 +132,9 @@ void NoisyImageDataLayer<Dtype>::InternalThreadEntry() {
     // get a blob
     timer.Start();
     CHECK_GT(lines_size, lines_id_);
-    cv::Mat cv_img = ReadImageToCVMat(root_folder + std::get<0>(lines_[lines_id_]),
+    cv::Mat cv_img = ReadImageToCVMat(root_folder + boost::get<0>(lines_[lines_id_]),
         new_height, new_width, is_color);
-    CHECK(cv_img.data) << "Could not load " << std::get<0>(lines_[lines_id_]);
+    CHECK(cv_img.data) << "Could not load " << boost::get<0>(lines_[lines_id_]);
     read_time += timer.MicroSeconds();
     timer.Start();
     // Apply transformations (mirror, crop...) to the image
@@ -143,8 +143,9 @@ void NoisyImageDataLayer<Dtype>::InternalThreadEntry() {
     this->data_transformer_->Transform(cv_img, &(this->transformed_data_));
     trans_time += timer.MicroSeconds();
 
-    prefetch_label[item_id][0] = std::get<1>(lines_[lines_id_]);
-    prefetch_label[item_id][1] = std::get<2>(lines_[lines_id_]);
+    offset = this->prefetch_label_.offset(item_id);
+    prefetch_label[offset] = boost::get<1>(lines_[lines_id_]);
+    prefetch_label[offset + 1] = boost::get<2>(lines_[lines_id_]);
     // go to the next iter
     lines_id_++;
     if (lines_id_ >= lines_size) {
@@ -163,6 +164,6 @@ void NoisyImageDataLayer<Dtype>::InternalThreadEntry() {
 }
 
 INSTANTIATE_CLASS(NoisyImageDataLayer);
-REGISTER_LAYER_CLASS(ImageData);
+REGISTER_LAYER_CLASS(NoisyImageData);
 
 }  // namespace caffe
