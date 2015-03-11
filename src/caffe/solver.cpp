@@ -460,7 +460,10 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
       this->net_->params_weight_decay();
   // get the learning rate
   Dtype rate = GetLearningRate();
-  if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
+  const shared_ptr<Blob<Dtype> > blob_label_d =
+      this->net_->blob_by_name("label_d");
+  if (this->param_.display() && this->iter_ % this->param_.display() == 0 &&
+      blob_label_d == NULL) {
     LOG(INFO) << "Iteration " << this->iter_ << ", lr = " << rate;
   }
   ClipGradients();
@@ -468,7 +471,26 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
   Dtype weight_decay = this->param_.weight_decay();
   string regularization_type = this->param_.regularization_type();
   switch (Caffe::mode()) {
-  case Caffe::CPU:
+  case Caffe::CPU: {
+    if (blob_label_d != NULL) {
+      const int batch_size = blob_label_d->num();
+      CHECK_EQ(blob_label_d->count(), batch_size);
+      const Dtype* label_d = blob_label_d->cpu_data();
+
+      Dtype batch_confidence = 0;
+      for (int i = 0; i < batch_size; i++) {
+        batch_confidence += (label_d[i] == 0); // source domain
+      }
+      batch_confidence = 0.5 + (batch_confidence / batch_size) * 0.5;
+
+      rate *= batch_confidence;
+      if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
+        LOG(INFO) << "Iteration " << this->iter_
+            << ", batch_confidence = " << batch_confidence
+            << ", lr = " << rate;
+      }
+    }
+
     for (int param_id = 0; param_id < net_params.size(); ++param_id) {
       // Compute the value to history, and then copy them to the blob's diff.
       Dtype local_rate = rate * net_params_lr[param_id];
@@ -503,8 +525,28 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
           net_params[param_id]->mutable_cpu_diff());
     }
     break;
-  case Caffe::GPU:
+  }
+  case Caffe::GPU: {
 #ifndef CPU_ONLY
+    if (blob_label_d != NULL) {
+      const int batch_size = blob_label_d->num();
+      CHECK_EQ(blob_label_d->count(), batch_size);
+      const Dtype* label_d = blob_label_d->gpu_data();
+
+      Dtype batch_confidence = 0;
+      for (int i = 0; i < batch_size; i++) {
+        batch_confidence += (label_d[i] == 0); // source domain
+      }
+      batch_confidence = 0.5 + (batch_confidence / batch_size) * 0.5;
+
+      rate *= batch_confidence;
+      if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
+        LOG(INFO) << "Iteration " << this->iter_
+            << ", batch_confidence = " << batch_confidence
+            << ", lr = " << rate;
+      }
+    }
+
     for (int param_id = 0; param_id < net_params.size(); ++param_id) {
       // Compute the value to history, and then copy them to the blob's diff.
       Dtype local_rate = rate * net_params_lr[param_id];
@@ -542,6 +584,7 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
     NO_GPU;
 #endif
     break;
+  }
   default:
     LOG(FATAL) << "Unknown caffe mode: " << Caffe::mode();
   }
