@@ -460,8 +460,10 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
       this->net_->params_weight_decay();
   // get the learning rate
   Dtype rate = GetLearningRate();
-  const shared_ptr<Blob<Dtype> > blob_label_d =
-      this->net_->blob_by_name("label_d");
+  shared_ptr<Blob<Dtype> > blob_label_d;
+  if (this->net_->has_blob("label_d")) {
+    blob_label_d = this->net_->blob_by_name("label_d");
+  }
   if (this->param_.display() && this->iter_ % this->param_.display() == 0 &&
       blob_label_d == NULL) {
     LOG(INFO) << "Iteration " << this->iter_ << ", lr = " << rate;
@@ -479,7 +481,7 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
 
       Dtype batch_confidence = 0;
       for (int i = 0; i < batch_size; i++) {
-        batch_confidence += (label_d[i] == 0); // source domain
+        batch_confidence += label_d[i];  // source domain
       }
       batch_confidence = 0.5 + (batch_confidence / batch_size) * 0.5;
 
@@ -534,9 +536,7 @@ void SGDSolver<Dtype>::ComputeUpdateValue() {
       const Dtype* label_d = blob_label_d->gpu_data();
 
       Dtype batch_confidence = 0;
-      for (int i = 0; i < batch_size; i++) {
-        batch_confidence += (label_d[i] == 0); // source domain
-      }
+      caffe_gpu_asum(batch_size, label_d, &batch_confidence);  // source domain
       batch_confidence = 0.5 + (batch_confidence / batch_size) * 0.5;
 
       rate *= batch_confidence;
