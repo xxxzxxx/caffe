@@ -1,7 +1,20 @@
 CXX=g++
 PROJECT := caffe
-STATIC_NAME := lib$(PROJECT).a
+BUILD_DIR := build
+LIB_BUILD_DIR := $(BUILD_DIR)/lib
+STATIC_NAME := $(LIB_BUILD_DIR)/lib$(PROJECT).a
+DYNAMIC_NAME := $(LIB_BUILD_DIR)/lib$(PROJECT).so
 USE_EIGEN?=y
+
+# Static linking
+ifneq (,$(findstring clang++,$(CXX)))
+	STATIC_LINK_COMMAND := -Wl,-force_load $(STATIC_NAME)
+else ifneq (,$(findstring g++,$(CXX)))
+	STATIC_LINK_COMMAND := -Wl,--whole-archive $(STATIC_NAME) -Wl,--no-whole-archive
+else
+	# The following line must not be indented with a tab, since we are not inside a target
+	$(error Cannot static link with the $(CXX) compiler)
+endif
 
 #HXX_SRCS := $(shell find include/$(PROJECT) ! -name "*.hpp")
 #CXX_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cpp" -name "*.cpp")
@@ -12,101 +25,108 @@ src/caffe/common.cpp \
 src/caffe/data_transformer.cpp \
 src/caffe/internal_thread.cpp \
 src/caffe/layer_factory.cpp \
+src/caffe/layers/absval_layer.cpp \
+src/caffe/layers/accuracy_layer.cpp \
+src/caffe/layers/argmax_layer.cpp \
+src/caffe/layers/base_conv_layer.cpp \
+src/caffe/layers/base_data_layer.cpp \
+src/caffe/layers/bnll_layer.cpp \
+src/caffe/layers/concat_layer.cpp \
+src/caffe/layers/contrastive_loss_layer.cpp \
+src/caffe/layers/conv_layer.cpp \
+src/caffe/layers/deconv_layer.cpp \
+src/caffe/layers/dropout_layer.cpp \
+src/caffe/layers/dummy_data_layer.cpp \
+src/caffe/layers/eltwise_layer.cpp \
+src/caffe/layers/euclidean_loss_layer.cpp \
+src/caffe/layers/exp_layer.cpp \
+src/caffe/layers/flatten_layer.cpp \
+src/caffe/layers/hinge_loss_layer.cpp \
+src/caffe/layers/im2col_layer.cpp \
+src/caffe/layers/image_data_layer.cpp \
+src/caffe/layers/infogain_loss_layer.cpp \
+src/caffe/layers/inner_product_layer.cpp \
+src/caffe/layers/loss_layer.cpp \
+src/caffe/layers/lrn_layer.cpp \
+src/caffe/layers/memory_data_layer.cpp \
+src/caffe/layers/multinomial_logistic_loss_layer.cpp \
+src/caffe/layers/mvn_layer.cpp \
+src/caffe/layers/neuron_layer.cpp \
+src/caffe/layers/pooling_layer.cpp \
+src/caffe/layers/power_layer.cpp \
+src/caffe/layers/relu_layer.cpp \
+src/caffe/layers/sigmoid_cross_entropy_loss_layer.cpp \
+src/caffe/layers/sigmoid_layer.cpp \
+src/caffe/layers/silence_layer.cpp \
+src/caffe/layers/slice_layer.cpp \
+src/caffe/layers/softmax_layer.cpp \
+src/caffe/layers/softmax_loss_layer.cpp \
+src/caffe/layers/split_layer.cpp \
+src/caffe/layers/tanh_layer.cpp \
+src/caffe/layers/threshold_layer.cpp \
+src/caffe/layers/window_data_layer.cpp \
 src/caffe/net.cpp \
 src/caffe/syncedmem.cpp \
-src/caffe/util/upgrade_proto.cpp \
-src/caffe/util/math_functions_eigen.cpp \
-src/caffe/util/insert_splits.cpp \
+src/caffe/util/benchmark.cpp \
 src/caffe/util/im2col.cpp \
+src/caffe/util/insert_splits.cpp \
 src/caffe/util/io.cpp \
-src/caffe/layers/window_data_layer.cpp \
-src/caffe/layers/mvn_layer.cpp \
-src/caffe/layers/pooling_layer.cpp \
-src/caffe/layers/base_data_layer.cpp \
-src/caffe/layers/argmax_layer.cpp \
-src/caffe/layers/relu_layer.cpp \
-src/caffe/layers/split_layer.cpp \
-src/caffe/layers/euclidean_loss_layer.cpp \
-src/caffe/layers/dummy_data_layer.cpp \
-src/caffe/layers/power_layer.cpp \
-src/caffe/layers/slice_layer.cpp \
-src/caffe/layers/threshold_layer.cpp \
-src/caffe/layers/dropout_layer.cpp \
-src/caffe/layers/concat_layer.cpp \
-src/caffe/layers/image_data_layer.cpp \
-src/caffe/layers/silence_layer.cpp \
-src/caffe/layers/multinomial_logistic_loss_layer.cpp \
-src/caffe/layers/tanh_layer.cpp \
-src/caffe/layers/loss_layer.cpp \
-src/caffe/layers/im2col_layer.cpp \
-src/caffe/layers/absval_layer.cpp \
-src/caffe/layers/softmax_layer.cpp \
-src/caffe/layers/flatten_layer.cpp \
-src/caffe/layers/sigmoid_layer.cpp \
-src/caffe/layers/eltwise_layer.cpp \
-src/caffe/layers/contrastive_loss_layer.cpp \
-src/caffe/layers/bnll_layer.cpp \
-src/caffe/layers/hinge_loss_layer.cpp \
-src/caffe/layers/memory_data_layer.cpp \
-src/caffe/layers/infogain_loss_layer.cpp \
-src/caffe/layers/softmax_loss_layer.cpp \
-src/caffe/layers/sigmoid_cross_entropy_loss_layer.cpp \
-src/caffe/layers/conv_layer.cpp \
-src/caffe/layers/lrn_layer.cpp \
-src/caffe/layers/inner_product_layer.cpp \
-src/caffe/layers/neuron_layer.cpp \
-src/caffe/layers/accuracy_layer.cpp \
+src/caffe/util/math_functions_eigen.cpp \
+src/caffe/util/upgrade_proto.cpp \
 
-# src/caffe/layers/exp_layer.cpp \
-# src/caffe/solver.cpp \
-# src/caffe/util/benchmark.cpp \
 # src/caffe/layers/data_layer.cpp \
 # src/caffe/layers/hdf5_data_layer.cpp \
 # src/caffe/layers/hdf5_output_layer.cpp \
+# src/caffe/solver.cpp \
+# src/caffe/util/db.cpp \
+# src/caffe/util/math_functions.cpp
 
-PROTO_SRCS := $(wildcard src/$(PROJECT)/proto/*.proto)
+PROTO_SRC_DIR := src/$(PROJECT)/proto
+PROTO_SRCS := $(wildcard $(PROTO_SRC_DIR)/*.proto)
 
 PROTO_GEN_HEADER := ${PROTO_SRCS:.proto=.pb.h}
 PROTO_GEN_CC := ${PROTO_SRCS:.proto=.pb.cc}
 
-BUILD_DIR := build
 CXX_OBJS := $(addprefix $(BUILD_DIR)/, ${CXX_SRCS:.cpp=.o})
 PROTO_OBJS := $(addprefix $(BUILD_DIR)/, ${PROTO_GEN_CC:.cc=.o})
+
 OBJS := $(PROTO_OBJS) $(CXX_OBJS)
+COMMON_FLAGS += -DCPU_ONLY
 
 INCLUDE_DIRS += ./include ./include/caffe/proto
-CXXFLAGS+=-std=gnu++0x -DCPU_ONLY
-CXXFLAGS+=-fvisibility=hidden #hide symbols for static lib
-LIBRARIES:=protobuf opencv_core opencv_highgui opencv_imgproc boost_thread boost_system
+LIBRARIES:=protobuf opencv_core opencv_highgui opencv_imgproc boost_thread boost_system boost_date_time
 LIBRARY_DIRS:=/usr/local/lib
 
 ifeq ($(USE_EIGEN), y)
-	CXXFLAGS += -DUSE_EIGEN
-	CXXFLAGS += -I./eigen3
+	COMMON_FLAGS += -DUSE_EIGEN
+	COMMON_FLAGS += -I./eigen3
 else
 	LIBRARIES += cblas
 endif
 
+COMMON_FLAGS += -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
+CXXFLAGS +=-std=gnu++0x
+CXXFLAGS +=-fvisibility=hidden #hide symbols for static lib
+CXXFLAGS += -pthread -fPIC $(COMMON_FLAGS)
 
-COMMON_FLAGS := -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
-CXXFLAGS +=  -fPIC $(COMMON_FLAGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
 		$(foreach library,$(LIBRARIES),-l$(library))
 
-all: init $(STATIC_NAME)
+ALL_BUILD_DIRS := $(LIB_BUILD_DIR)
 
-init:
+all: $(STATIC_NAME) $(DYNAMIC_NAME)
+
+$(ALL_BUILD_DIRS):
+	@ mkdir -p $@
 	@ mkdir -p $(foreach obj,$(OBJS),$(dir $(obj)))
 
-$(OBJS): $(PROTO_GEN_CC) $(HXX_SRCS)
-
-$(BUILD_DIR)/src/$(PROJECT)/%.o: src/$(PROJECT)/%.cpp
+$(BUILD_DIR)/src/$(PROJECT)/proto/%.o: $(PROTO_GEN_CC) src/$(PROJECT)/proto/%.cc | $(ALL_BUILD_DIRS)
 	$(CXX) $< $(CXXFLAGS) -c -o $@
 
-$(BUILD_DIR)/src/$(PROJECT)/layers/%.o: src/$(PROJECT)/layers/%.cpp
+$(BUILD_DIR)/src/$(PROJECT)/%.o: src/$(PROJECT)/%.cpp | $(ALL_BUILD_DIRS)
 	$(CXX) $< $(CXXFLAGS) -c -o $@
 
-$(BUILD_DIR)/src/$(PROJECT)/proto/%.o: src/$(PROJECT)/proto/%.cc
+$(BUILD_DIR)/src/$(PROJECT)/layers/%.o: src/$(PROJECT)/layers/%.cpp | $(ALL_BUILD_DIRS)
 	$(CXX) $< $(CXXFLAGS) -c -o $@
 
 $(PROTO_GEN_CC): $(PROTO_SRCS)
@@ -115,21 +135,26 @@ $(PROTO_GEN_CC): $(PROTO_SRCS)
 	mv $(PROTO_GEN_HEADER) include/$(PROJECT)/proto/
 	@echo
 
-$(STATIC_NAME): init $(PROTO_OBJS) $(OBJS)
-	ar rcs $(STATIC_NAME) $(PROTO_OBJS) $(OBJS)
-	@echo
+$(DYNAMIC_NAME): $(OBJS) | $(LIB_BUILD_DIR)
+	@ echo LD -o $@
+	$(CXX) -shared -o $@ $(OBJS) $(LINKFLAGS) $(LDFLAGS) $(DYNAMIC_FLAGS)
 
-main: mobile/main.cpp $(STATIC_NAME)
-	$(CXX) $< $(CXXFLAGS) -o $(BUILD_DIR)/$@ -L. -lcaffe $(LDFLAGS)
+$(STATIC_NAME): $(OBJS) | $(LIB_BUILD_DIR)
+	@ echo AR -o $@
+	ar rcs $@ $(OBJS)
 
-run:
-	./$(BUILD_DIR)/main models/bvlc_reference_caffenet/deploy_mobile.prototxt \
-	       models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel \
+$(BUILD_DIR)/main: mobile/main.cpp $(STATIC_NAME)
+	$(CXX) $< $(CXXFLAGS) -o $@ $(STATIC_LINK_COMMAND) $(LDFLAGS)
+
+MODEL ?= bvlc_reference_caffenet
+
+run: $(BUILD_DIR)/main
+	./$< models/$(MODEL)/deploy_mobile.prototxt \
+	       models/$(MODEL)/$(MODEL).caffemodel \
 	       examples/images/cat.jpg
 
 clean:
-	@- $(RM) $(NAME) $(STATIC_NAME)
+	@- $(RM) $(NAME) $(STATIC_NAME) $(DYNAMIC_NAME)
 	@- $(RM) $(PROTO_GEN_CC)
-	@- #$(RM) -rf include/$(PROJECT)/proto/
-	@- #$(RM) -rf $(BUILD_DIR)
-	@- $(RM) -f test
+	@- $(RM) -rf include/$(PROJECT)/proto/
+	@- $(RM) -rf $(BUILD_DIR)
