@@ -73,11 +73,11 @@ src/caffe/util/insert_splits.cpp \
 src/caffe/util/io.cpp \
 src/caffe/util/math_functions_eigen.cpp \
 src/caffe/util/upgrade_proto.cpp \
+src/caffe/solver.cpp \
 
 # src/caffe/layers/data_layer.cpp \
 # src/caffe/layers/hdf5_data_layer.cpp \
 # src/caffe/layers/hdf5_output_layer.cpp \
-# src/caffe/solver.cpp \
 # src/caffe/util/db.cpp \
 # src/caffe/util/math_functions.cpp
 

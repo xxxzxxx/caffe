@@ -45,7 +45,7 @@ class LogMessage{
 #define DLOG(type)       caffe::LogMessage(#type).stream()
 #define VLOG(level)      if ((level) <= FLAGS_v) LOG(INFO)
 
-#define CHECK(x)         if(x) {} else LOG(ERROR) << #x
+#define CHECK(x)         if (x) {} else LOG(ERROR) << #x
 #define DCHECK(x)        CHECK(x)
 
 #define CHECK_EQ(x, y)   CHECK((x) == (y))
@@ -54,6 +54,11 @@ class LogMessage{
 #define CHECK_LE(x, y)   CHECK((x) <= (y))
 #define CHECK_GE(x, y)   CHECK((x) >= (y))
 #define CHECK_NE(x, y)   CHECK((x) != (y))
+#define CHECK_NOTNULL(x) \
+    ({ \
+        CHECK_NE(x, NULL); \
+        (x); \
+    })
 
 #define DCHECK_EQ(x, y)  DCHECK((x) == (y))
 #define DCHECK_LT(x, y)  DCHECK((x) < (y))
