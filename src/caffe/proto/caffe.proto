@@ -59,6 +59,12 @@ message FillerParameter {
     AVERAGE = 2;
   }
   optional VarianceNorm variance_norm = 8 [default = FAN_IN];
+  // The alpha in identity filler
+  optional float alpha = 9 [default = 0];
+  // The values in manual filler
+  repeated float values = 10;
+  // The binary proto file name used by BlobProto filler
+  optional string source = 11;
 }
 
 message NetParameter {
@@ -302,6 +308,7 @@ message ParamSpec {
 // Update the next available ID when you add a new LayerParameter field.
 //
 // LayerParameter next available layer-specific ID: 139 (last added: tile_param)
+// LayerParameter next available layer-specific ID: 144 (last added: highway_conv_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -350,6 +357,7 @@ message LayerParameter {
   // The default for the engine is set by the ENGINE switch at compile-time.
   optional AccuracyParameter accuracy_param = 102;
   optional ArgMaxParameter argmax_param = 103;
+  optional BootstrapParameter bootstrap_param = 139;
   optional ConcatParameter concat_param = 104;
   optional ContrastiveLossParameter contrastive_loss_param = 105;
   optional ConvolutionParameter convolution_param = 106;
@@ -362,14 +370,17 @@ message LayerParameter {
   optional FlattenParameter flatten_param = 135;
   optional HDF5DataParameter hdf5_data_param = 112;
   optional HDF5OutputParameter hdf5_output_param = 113;
+  optional HighwayConvolutionParameter highway_conv_param = 143;
   optional HingeLossParameter hinge_loss_param = 114;
   optional ImageDataParameter image_data_param = 115;
   optional InfogainLossParameter infogain_loss_param = 116;
   optional InnerProductParameter inner_product_param = 117;
+  optional KNNParameter knn_param = 141;
   optional LogParameter log_param = 134;
   optional LRNParameter lrn_param = 118;
   optional MemoryDataParameter memory_data_param = 119;
   optional MVNParameter mvn_param = 120;
+  optional PairLabelParameter pair_label_param = 140;
   optional PoolingParameter pooling_param = 121;
   optional PowerParameter power_param = 122;
   optional PReLUParameter prelu_param = 131;
@@ -379,6 +390,7 @@ message LayerParameter {
   optional ReshapeParameter reshape_param = 133;
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
+  optional SoftmaxMappingLabelLossParameter softmax_mapping_label_loss_param = 142;
   optional SPPParameter spp_param = 132;
   optional SliceParameter slice_param = 126;
   optional TanHParameter tanh_param = 127;
@@ -450,6 +462,18 @@ message ArgMaxParameter {
   optional int32 axis = 3;
 }
 
+// Message that stores parameters used by BootstrapLayer and BootstrapLossLayer
+message BootstrapParameter {
+  enum Mode {
+    HARD = 0;
+    SOFT = 1;
+  }
+  optional Mode mode = 1 [default = HARD];
+  optional float beta = 2 [default = 1];
+  optional FillerParameter beta_filler = 3; // The filler for the beta
+}
+
+// Message that stores parameters used by ConcatLayer
 message ConcatParameter {
   // The axis along which to concatenate -- may be negative to index from the
   // end (e.g., -1 for the last axis).  Other axes must have the
@@ -522,6 +546,38 @@ message ConvolutionParameter {
   optional bool force_nd_im2col = 17 [default = false];
 }
 
+// Message that stores parameters used by HighwayConvolutionLayer
+message HighwayConvolutionParameter {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+  // Pad, kernel size, and stride are all given as a single value for equal
+  // dimensions in height and width or as Y, X pairs.
+  optional uint32 pad = 3 [default = 0]; // The padding size (equal in Y, X)
+  optional uint32 pad_h = 9 [default = 0]; // The padding height
+  optional uint32 pad_w = 10 [default = 0]; // The padding width
+  optional uint32 kernel_size = 4; // The kernel size (square)
+  optional uint32 kernel_h = 11; // The kernel height
+  optional uint32 kernel_w = 12; // The kernel width
+  optional uint32 group = 5 [default = 1]; // The group size for group conv
+  optional uint32 stride = 6 [default = 1]; // The stride (equal in Y, X)
+  optional uint32 stride_h = 13; // The stride height
+  optional uint32 stride_w = 14; // The stride width
+  optional FillerParameter weight_filler = 7; // The filler for the weight
+  optional FillerParameter bias_filler = 8; // The filler for the bias
+  optional FillerParameter transform_weight_filler = 16; // The filler for the input gate weights
+  optional FillerParameter transform_bias_filler = 17; // The filler for the input gate bias
+  optional uint32 transform_kernel_size = 18; // The transform gate kernel size (square)
+  optional uint32 transform_pad = 19 [default = 0]; // The transform gate padding size (equal in Y, X)
+
+  enum Engine {
+    DEFAULT = 0;
+    CAFFE = 1;
+    CUDNN = 2;
+  }
+  optional Engine engine = 15 [default = CUDNN];
+}
+
+// Message that stores parameters used by DataLayer
 message DataParameter {
   enum DB {
     LEVELDB = 0;
@@ -705,6 +761,11 @@ message InnerProductParameter {
   optional int32 axis = 5 [default = 1];
 }
 
+// Message that stores parameters used by KNNLayer
+message KNNParameter {
+  optional uint32 top_k = 1 [default = 1];
+}
+
 // Message that stores parameters used by LogLayer
 message LogParameter {
   // LogLayer computes outputs y = log_base(shift + scale * x), for base > 0.
@@ -746,6 +807,12 @@ message MVNParameter {
   optional float eps = 3 [default = 1e-9];
 }
 
+// Message that stores parameters used by PairLabelLayer
+message PairLabelParameter {
+  optional float thresh = 1 [default = 0.5];
+}
+
+// Message that stores parameters used by PoolingLayer
 message PoolingParameter {
   enum PoolMethod {
     MAX = 0;
@@ -938,6 +1005,11 @@ message SoftmaxParameter {
   // from the end (e.g., -1 for the last axis).
   // Any other axes will be evaluated as independent softmaxes.
   optional int32 axis = 2 [default = 1];
+}
+
+// Message that stores parameters used by SoftmaxWithMappingLabelLossLayer
+message SoftmaxMappingLabelLossParameter {
+  optional FillerParameter matrix_filler = 1;
 }
 
 message TanHParameter {

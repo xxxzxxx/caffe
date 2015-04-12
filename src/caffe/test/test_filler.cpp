@@ -240,4 +240,72 @@ TYPED_TEST(MSRAFillerTest, TestFillAverage) {
   this->test_params(FillerParameter_VarianceNorm_AVERAGE, n);
 }
 
+template <typename Dtype>
+class IdentityFillerTest : public ::testing::Test {
+ protected:
+  IdentityFillerTest()
+      : blob_(new Blob<Dtype>(std::vector<int>(2, 5))),
+        filler_param_() {
+    filler_param_.set_alpha(0.);
+    filler_.reset(new IdentityFiller<Dtype>(filler_param_));
+    filler_->Fill(blob_);
+  }
+  virtual ~IdentityFillerTest() { delete blob_; }
+  Blob<Dtype>* const blob_;
+  FillerParameter filler_param_;
+  shared_ptr<IdentityFiller<Dtype> > filler_;
+};
+
+TYPED_TEST_CASE(IdentityFillerTest, TestDtypes);
+
+TYPED_TEST(IdentityFillerTest, TestFill) {
+  EXPECT_TRUE(this->blob_);
+  EXPECT_EQ(this->blob_->num_axes(), 2);
+  int K = this->blob_->shape(0);  // #(existing classes)
+  EXPECT_EQ(this->blob_->shape(1), K);
+  const TypeParam alpha = this->filler_param_.alpha();
+  EXPECT_EQ(alpha, TypeParam(0));
+
+  for (int i = 0; i < K; ++i) {
+    for (int j = 0; j < K; ++j) {
+      if (i != j) {
+        // EXPECT_EQ(data[i * K + j], TypeParam(0));
+        EXPECT_EQ(this->blob_->data_at(i,j,0,0), TypeParam(0));
+      } else {
+        // EXPECT_EQ(data[i * K + j], TypeParam(1));
+        EXPECT_EQ(this->blob_->data_at(i,j,0,0), TypeParam(1));
+      }
+    }
+  }
+}
+
+TYPED_TEST(IdentityFillerTest, TestFillWithAlpha) {
+  this->filler_param_.set_alpha(0.2);
+  this->filler_.reset(new IdentityFiller<TypeParam>(this->filler_param_));
+  this->filler_->Fill(this->blob_);
+
+  EXPECT_TRUE(this->blob_);
+  EXPECT_EQ(this->blob_->num_axes(), 2);
+  int K = this->blob_->shape(0);  // #(existing classes)
+  EXPECT_EQ(this->blob_->shape(1), K);
+  const TypeParam alpha = this->filler_param_.alpha();
+
+  for (int i = 0; i < K-1; ++i) {
+    for (int j = 0; j < K-1; ++j) {
+      if (i != j) {
+        EXPECT_EQ(this->blob_->data_at(i,j,0,0), TypeParam(0));
+      } else {
+        EXPECT_EQ(this->blob_->data_at(i,j,0,0), TypeParam(1));
+      }
+    }
+  }
+  for (int i = 0; i < K-1; ++i) {
+    EXPECT_EQ(this->blob_->data_at(i,K-1,0,0), TypeParam(1-alpha)/(K-1));
+  }
+  EXPECT_EQ(this->blob_->data_at(K-1,K-1,0,0), alpha);
+  for (int j = 0; j < K-1; ++j) {
+    EXPECT_EQ(this->blob_->data_at(K-1,j,0,0), TypeParam(0));
+  }
+}
+
 }  // namespace caffe

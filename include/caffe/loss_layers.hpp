@@ -131,6 +131,38 @@ class LossLayer : public Layer<Dtype> {
   }
 };
 
+template <typename Dtype>
+class AdaptiveContrastiveLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit AdaptiveContrastiveLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param), diff_() {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline int ExactNumBottomBlobs() const { return 3; }
+  virtual inline const char* type() const { return "AdaptiveContrastiveLoss"; }
+  virtual inline bool AllowForceBackward(const int bottom_index) const {
+    return bottom_index != 2;
+  }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  Blob<Dtype> diff_;  // cached for backward pass
+  Blob<Dtype> dist_sq_;  // cached for backward pass
+  Blob<Dtype> diff_sq_;  // tmp storage for gpu forward pass
+  Blob<Dtype> summer_vec_;  // tmp storage for gpu forward pass
+  Blob<Dtype> margin_;
+};
+
 /**
  * @brief Computes the contrastive loss @f$
  *          E = \frac{1}{2N} \sum\limits_{n=1}^N \left(y\right) d +
@@ -766,6 +798,170 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   bool normalize_;
 
   int softmax_axis_, outer_num_, inner_num_;
+};
+
+template <typename Dtype>
+class SoftmaxWithMappingLabelLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit SoftmaxWithMappingLabelLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "SoftmaxWithMappingLabelLoss"; }
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return -1; }
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int MaxTopBlobs() const { return 3; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+//  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+//      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+//  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+//      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void ProjectToStochasticMatrixSpace(Blob<Dtype>* matrix);
+
+  shared_ptr<Layer<Dtype> > softmax_layer_;
+  Blob<Dtype> prob_;
+  Blob<Dtype> mapped_prob_;
+  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  vector<Blob<Dtype>*> softmax_top_vec_;
+
+  int M_;
+  int N_;
+  int K_;
+};
+
+template <typename Dtype>
+class BootstrapLayer : public Layer<Dtype> {
+ public:
+  explicit BootstrapLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "Bootstrap"; }
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return -1; }
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int MaxTopBlobs() const { return 2; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  /// The internal SoftmaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > softmax_layer_;
+  /// prob stores the output probability predictions from the SoftmaxLayer.
+  Blob<Dtype> prob_;
+  /// bottom vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  /// top vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_top_vec_;
+  /// The internal ArgMaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > argmax_layer_;
+  /// p_label stores the output predicted labels from the ArgMaxLayer.
+  Blob<Dtype> p_label_;
+  /// top vector holder used in call to the underlying ArgMaxLayer::Forward
+  vector<Blob<Dtype>*> argmax_top_vec_;
+  /// True for hard bootstrapping; otherwise, soft bootstrapping.
+  bool is_hard_mode_;
+  /// beta value for bootstrapping
+  Blob<Dtype> beta_;
+};
+
+template <typename Dtype>
+class BootstrapLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit BootstrapLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "BootstrapLoss"; }
+  virtual inline int ExactNumTopBlobs() const { return -1; }
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int MaxTopBlobs() const { return 2; }
+
+ protected:
+  /// @copydoc BootstrapLossLayer
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+
+  /// The internal SoftmaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > softmax_layer_;
+  /// prob stores the output probability predictions from the SoftmaxLayer.
+  Blob<Dtype> prob_;
+  /// bottom vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  /// top vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_top_vec_;
+  /// The internal ArgMaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > argmax_layer_;
+  /// p_label stores the output predicted labels from the ArgMaxLayer.
+  Blob<Dtype> p_label_;
+  /// top vector holder used in call to the underlying ArgMaxLayer::Forward
+  vector<Blob<Dtype>*> argmax_top_vec_;
+  /// Whether to ignore instances with a certain label.
+  bool has_ignore_label_;
+  /// The label indicating that an instance should be ignored.
+  int ignore_label_;
+  /// Whether to normalize the loss by the total number of values present
+  /// (otherwise just by the batch size).
+  bool normalize_;
+  /// True for hard bootstrapping; otherwise, soft bootstrapping.
+  bool is_hard_mode_;
+  /// beta value for bootstrapping
+  Dtype beta_;
+
+  int softmax_axis_, outer_num_, inner_num_;
+};
+
+template <typename Dtype>
+class BootstrappingLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit BootstrappingLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "BootstrappingLoss"; }
+
+ protected:
+  /// @copydoc BootstrappingLossLayer
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+
+  /// The internal BootstrapLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > bootstrap_layer_;
+  /// prob stores the output probability predictions from the BootstrapLayer.
+  Blob<Dtype> b_prob_;
+  /// prob stores the output probability predictions from the BootstrapLayer.
+  Blob<Dtype> prob_;
+  /// bottom vector holder used in call to the underlying BootstrapLayer::Forward
+  vector<Blob<Dtype>*> bootstrap_bottom_vec_;
+  /// top vector holder used in call to the underlying BootstrapLayer::Forward
+  vector<Blob<Dtype>*> bootstrap_top_vec_;
 };
 
 }  // namespace caffe

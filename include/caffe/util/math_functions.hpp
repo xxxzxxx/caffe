@@ -146,6 +146,25 @@ template <typename Dtype>
 void caffe_cpu_scale(const int n, const Dtype alpha, const Dtype *x, Dtype* y);
 
 #ifndef CPU_ONLY  // GPU
+// Computes Y = H.G + X.(1 - G)
+
+template <typename Dtype>
+void caffe_gpu_gate_h_and_x_with_g(const int N,
+                                   Dtype* H, const Dtype* X,
+                                   Dtype* G, Dtype* Y);
+
+// computes Y = A.(B - C)
+template <typename Dtype>
+void caffe_gpu_dot_with_diff(const int N, Dtype* A, const Dtype* B,
+                             const Dtype* C, Dtype* Y);
+
+// computes Y = Y + A.(1 - B)
+template <typename Dtype>
+void caffe_gpu_dot_add_one_minus_b(const int N, const Dtype* A, const Dtype* B, Dtype* Y);
+
+// elementwise multiply
+template <typename Dtype>
+void caffe_gpu_elem_multiply(const int N, const Dtype* A, const Dtype* B, Dtype* Y);
 
 // Decaf gpu gemm provides an interface that is almost the same as the cpu
 // gemm function - following the c convention and calling the fortran-order

@@ -95,6 +95,80 @@ class GaussianFiller : public Filler<Dtype> {
   shared_ptr<SyncedMemory> rand_vec_;
 };
 
+/** @brief Fills a Blob as a identity matrix.
+ *         such that @f$ \forall i \sum_j x_{ij} = 1 @f$.
+ *  Ref: Sukhbaatar, Sainbayar, and Rob Fergus.
+ *       "Learning from Noisy Labels with Deep Neural Networks."
+ *       arXiv preprint arXiv:1406.2080 (2014).
+ */
+template <typename Dtype>
+class IdentityFiller : public Filler<Dtype> {
+ public:
+  explicit IdentityFiller(const FillerParameter& param)
+      : Filler<Dtype>(param) {}
+  virtual void Fill(Blob<Dtype>* blob) {
+    Dtype* data = blob->mutable_cpu_data();
+    CHECK_EQ(blob->num_axes(), 2);
+    int K = blob->shape(0);  // #(existing classes)
+    CHECK_EQ(blob->shape(1), K);
+    const Dtype alpha = this->filler_param_.alpha();
+    CHECK_GE(alpha, 0);
+
+    caffe_set(blob->count(), Dtype(0), data);
+    if (alpha > 0) {
+      --K;
+      for (int i = 0; i < K; ++i) {
+        data[i * (K + 1) + i] = Dtype(1);
+      }
+      for (int i = 0; i < K; ++i) {
+        data[i * (K + 1) + K] = Dtype(1 - alpha) / K;
+      }
+      data[K * (K + 2)] = alpha;  // the last entry
+    } else {
+      for (int i = 0; i < K; ++i) {
+        data[i * K + i] = Dtype(1);
+      }
+    }
+    CHECK_EQ(this->filler_param_.sparse(), -1)
+         << "Sparsity not supported by this Filler.";
+  }
+};
+
+template <typename Dtype>
+class ManualFiller : public Filler<Dtype> {
+ public:
+  explicit ManualFiller(const FillerParameter& param)
+      : Filler<Dtype>(param) {}
+  virtual void Fill(Blob<Dtype>* blob) {
+    Dtype* data = blob->mutable_cpu_data();
+    const int count = blob->count();
+    CHECK_EQ(count, this->filler_param_.values_size());
+    for (int i = 0; i < count; ++i) {
+      data[i] = this->filler_param_.values(i);
+    }
+    CHECK_EQ(this->filler_param_.sparse(), -1)
+         << "Sparsity not supported by this Filler.";
+  }
+};
+
+template <typename Dtype>
+class BlobProtoFiller : public Filler<Dtype> {
+ public:
+  explicit BlobProtoFiller(const FillerParameter& param)
+      : Filler<Dtype>(param) {
+    fstream input(param.source().c_str(), ios::in | ios::binary);
+    blob_proto_.ParseFromIstream(&input);
+  }
+  virtual void Fill(Blob<Dtype>* blob) {
+    blob->FromProto(blob_proto_);
+    CHECK_EQ(this->filler_param_.sparse(), -1)
+        << "Sparsity not supported by this Filler.";
+  }
+
+ protected:
+  BlobProto blob_proto_;
+};
+
 /** @brief Fills a Blob with values @f$ x \in [0, 1] @f$
  *         such that @f$ \forall i \sum_j x_{ij} = 1 @f$.
  */
@@ -275,6 +349,12 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
     return new ConstantFiller<Dtype>(param);
   } else if (type == "gaussian") {
     return new GaussianFiller<Dtype>(param);
+  } else if (type == "identity") {
+    return new IdentityFiller<Dtype>(param);
+  } else if (type == "manual") {
+    return new ManualFiller<Dtype>(param);
+  } else if (type == "blob_proto") {
+    return new BlobProtoFiller<Dtype>(param);
   } else if (type == "positive_unitball") {
     return new PositiveUnitballFiller<Dtype>(param);
   } else if (type == "uniform") {
