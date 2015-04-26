@@ -117,18 +117,27 @@ void BootstrapLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     const Dtype* prob_data = prob_.cpu_data();
     caffe_copy(prob_.count(), prob_data, bottom_diff);
-    const Dtype* label = bottom[1]->cpu_data();
+    const Dtype* p_label = p_label_.cpu_data();  // predicted label
+    const Dtype* n_label = bottom[1]->cpu_data();  // noisy label
     int dim = prob_.count() / outer_num_;
     int count = 0;
     for (int i = 0; i < outer_num_; ++i) {
       for (int j = 0; j < inner_num_; ++j) {
-        const int label_value = static_cast<int>(label[i * inner_num_ + j]);
-        if (has_ignore_label_ && label_value == ignore_label_) {
+        const int n_label_value = static_cast<int>(n_label[i * inner_num_ + j]);
+        const int p_label_value = static_cast<int>(p_label[i * inner_num_ + j]);
+        if (has_ignore_label_ && n_label_value == ignore_label_) {
           for (int c = 0; c < bottom[0]->shape(softmax_axis_); ++c) {
             bottom_diff[i * dim + c * inner_num_ + j] = 0;
           }
         } else {
-          bottom_diff[i * dim + label_value * inner_num_ + j] -= 1;
+          for (int k = 0; k < bottom[0]->channels(); ++k) {
+            Dtype c = is_hard_mode_
+                      ? (beta_ * (k == n_label_value) +
+                        (1 - beta_) * (k == p_label_value))
+                      : (beta_ * (k == n_label_value) +
+                        (1 - beta_) * prob_data[i * dim + k * inner_num_ + j]);
+            bottom_diff[i * dim + k * inner_num_ + j] -= c;
+          }
           ++count;
         }
       }
