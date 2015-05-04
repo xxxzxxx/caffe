@@ -38,8 +38,8 @@ void BootstrapLossLayer<Dtype>::LayerSetUp(
     ignore_label_ = this->layer_param_.loss_param().ignore_label();
   }
   normalize_ = this->layer_param_.loss_param().normalize();
-  is_hard_mode_ = this->layer_param_.bootstrap_loss_param().is_hard_mode();
-  beta_ = this->layer_param_.bootstrap_loss_param().beta();
+  is_hard_mode_ = this->layer_param_.bootstrap_param().is_hard_mode();
+  beta_ = this->layer_param_.bootstrap_param().beta();
 }
 
 template <typename Dtype>

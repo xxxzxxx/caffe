@@ -85,6 +85,36 @@ TYPED_TEST(InnerProductLayerTest, TestForward) {
   }
 }
 
+TYPED_TEST(InnerProductLayerTest, TestForward2) {
+  typedef typename TypeParam::Dtype Dtype;
+  bool IS_VALID_CUDA = false;
+#ifndef CPU_ONLY
+  IS_VALID_CUDA = CAFFE_TEST_CUDA_PROP.major >= 2;
+#endif
+  if (Caffe::mode() == Caffe::CPU ||
+      sizeof(Dtype) == 4 || IS_VALID_CUDA) {
+    LayerParameter layer_param;
+    InnerProductParameter* inner_product_param =
+        layer_param.mutable_inner_product_param();
+    inner_product_param->set_num_output(60);
+    inner_product_param->set_bias_term(false);
+    inner_product_param->mutable_weight_filler()->set_type("identity");
+    shared_ptr<InnerProductLayer<Dtype> > layer(
+        new InnerProductLayer<Dtype>(layer_param));
+    layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
+    layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
+    const Dtype* bottom_data = this->blob_bottom_->cpu_data();
+    const Dtype* top_data = this->blob_top_->cpu_data();
+    const int count = this->blob_top_->count();
+    EXPECT_EQ(this->blob_bottom_->count(), count);
+    for (int i = 0; i < count; ++i) {
+      EXPECT_EQ(top_data[i], bottom_data[i]);
+    }
+  } else {
+    LOG(ERROR) << "Skipping test due to old architecture.";
+  }
+}
+
 TYPED_TEST(InnerProductLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
   bool IS_VALID_CUDA = false;

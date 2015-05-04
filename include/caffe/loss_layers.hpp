@@ -764,6 +764,46 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
 };
 
 template <typename Dtype>
+class BootstrapLayer : public LossLayer<Dtype> {
+ public:
+  explicit BootstrapLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "Bootstrap"; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  /// The internal SoftmaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > softmax_layer_;
+  /// prob stores the output probability predictions from the SoftmaxLayer.
+  Blob<Dtype> prob_;
+  /// bottom vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  /// top vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_top_vec_;
+  /// The internal ArgMaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > argmax_layer_;
+  /// p_label stores the output predicted labels from the ArgMaxLayer.
+  Blob<Dtype> p_label_;
+  /// top vector holder used in call to the underlying ArgMaxLayer::Forward
+  vector<Blob<Dtype>*> argmax_top_vec_;
+  /// True for hard bootstrapping; otherwise, soft bootstrapping.
+  bool is_hard_mode_;
+  /// beta value for bootstrapping
+  Dtype beta_;
+  int softmax_axis_;
+};
+
+template <typename Dtype>
 class BootstrapLossLayer : public LossLayer<Dtype> {
  public:
    /**
