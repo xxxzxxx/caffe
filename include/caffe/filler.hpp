@@ -134,6 +134,23 @@ class IdentityFiller : public Filler<Dtype> {
   }
 };
 
+template <typename Dtype>
+class ManualFiller : public Filler<Dtype> {
+ public:
+  explicit ManualFiller(const FillerParameter& param)
+      : Filler<Dtype>(param) {}
+  virtual void Fill(Blob<Dtype>* blob) {
+    Dtype* data = blob->mutable_cpu_data();
+    const int count = blob->count();
+    CHECK_EQ(count, this->filler_param_.values_size());
+    for (int i = 0; i < count; ++i) {
+      data[i] = this->filler_param_.values(i);
+    }
+    CHECK_EQ(this->filler_param_.sparse(), -1)
+         << "Sparsity not supported by this Filler.";
+  }
+};
+
 /** @brief Fills a Blob with values @f$ x \in [0, 1] @f$
  *         such that @f$ \forall i \sum_j x_{ij} = 1 @f$.
  */
@@ -211,6 +228,8 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
     return new GaussianFiller<Dtype>(param);
   } else if (type == "identity") {
     return new IdentityFiller<Dtype>(param);
+  } else if (type == "manual") {
+    return new ManualFiller<Dtype>(param);
   } else if (type == "positive_unitball") {
     return new PositiveUnitballFiller<Dtype>(param);
   } else if (type == "uniform") {

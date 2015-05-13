@@ -50,6 +50,7 @@ message FillerParameter {
   // Gaussian filler -- the default -1 means don't perform sparsification.
   optional int32 sparse = 7 [default = -1];
   optional float alpha = 8 [default = 0]; // the alpha in identity filler
+  repeated float values = 9; // the values in manual filler
 }
 
 message NetParameter {
