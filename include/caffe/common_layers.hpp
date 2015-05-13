@@ -265,6 +265,38 @@ class InnerProductLayer : public Layer<Dtype> {
 };
 
 /**
+ * Intended for use after a layer to produce a similar and a dissimilar pair.
+ * Use knn to randomly select a neighbor and a non-neighbor for each input
+ * in a batch.
+ *
+ * NOTE: does not implement Backwards operation.
+ */
+template <typename Dtype>
+class KNNLayer : public Layer<Dtype> {
+ public:
+  explicit KNNLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "KNN"; }
+  virtual inline int MinBottomBlobs() const { return 1; }
+  virtual inline int MaxBottomBlobs() const { return 2; }
+  virtual inline int MaxTopBlobs() const { return 4; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {}
+
+  int top_k_;
+  Blob<Dtype> diff_;
+};
+
+/**
  * @brief Normalizes the input to have 0-mean and/or unit (1) variance.
  *
  * TODO(dox): thorough documentation for Forward, Backward, and proto params.
