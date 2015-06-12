@@ -79,6 +79,7 @@ class ThresholdParameter;
 class WindowDataParameter;
 class V1LayerParameter;
 class V0LayerParameter;
+class PReLUParameter;
 
 enum SolverParameter_SolverMode {
   SolverParameter_SolverMode_CPU = 0,
@@ -2693,6 +2694,15 @@ class LayerParameter : public ::google::protobuf::Message {
   inline ::caffe::PowerParameter* release_power_param();
   inline void set_allocated_power_param(::caffe::PowerParameter* power_param);
 
+  // optional .caffe.PReLUParameter prelu_param = 131;
+  inline bool has_prelu_param() const;
+  inline void clear_prelu_param();
+  static const int kPreluParamFieldNumber = 131;
+  inline const ::caffe::PReLUParameter& prelu_param() const;
+  inline ::caffe::PReLUParameter* mutable_prelu_param();
+  inline ::caffe::PReLUParameter* release_prelu_param();
+  inline void set_allocated_prelu_param(::caffe::PReLUParameter* prelu_param);
+
   // optional .caffe.PythonParameter python_param = 130;
   inline bool has_python_param() const;
   inline void clear_python_param();
@@ -2819,6 +2829,8 @@ class LayerParameter : public ::google::protobuf::Message {
   inline void clear_has_pooling_param();
   inline void set_has_power_param();
   inline void clear_has_power_param();
+  inline void set_has_prelu_param();
+  inline void clear_has_prelu_param();
   inline void set_has_python_param();
   inline void clear_has_python_param();
   inline void set_has_relu_param();
@@ -2870,6 +2882,7 @@ class LayerParameter : public ::google::protobuf::Message {
   ::caffe::MVNParameter* mvn_param_;
   ::caffe::PoolingParameter* pooling_param_;
   ::caffe::PowerParameter* power_param_;
+  ::caffe::PReLUParameter* prelu_param_;
   ::caffe::PythonParameter* python_param_;
   ::caffe::ReLUParameter* relu_param_;
   ::caffe::SigmoidParameter* sigmoid_param_;
@@ -2881,7 +2894,7 @@ class LayerParameter : public ::google::protobuf::Message {
   int phase_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(41 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(42 + 31) / 32];
 
   friend void  protobuf_AddDesc_caffe_2eproto();
   friend void protobuf_AssignDesc_caffe_2eproto();
@@ -4466,20 +4479,30 @@ class HDF5DataParameter : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 batch_size() const;
   inline void set_batch_size(::google::protobuf::uint32 value);
 
+  // optional bool shuffle = 3 [default = false];
+  inline bool has_shuffle() const;
+  inline void clear_shuffle();
+  static const int kShuffleFieldNumber = 3;
+  inline bool shuffle() const;
+  inline void set_shuffle(bool value);
+
   // @@protoc_insertion_point(class_scope:caffe.HDF5DataParameter)
  private:
   inline void set_has_source();
   inline void clear_has_source();
   inline void set_has_batch_size();
   inline void clear_has_batch_size();
+  inline void set_has_shuffle();
+  inline void clear_has_shuffle();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* source_;
   ::google::protobuf::uint32 batch_size_;
+  bool shuffle_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_caffe_2eproto();
   friend void protobuf_AssignDesc_caffe_2eproto();
@@ -7967,6 +7990,100 @@ class V0LayerParameter : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static V0LayerParameter* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class PReLUParameter : public ::google::protobuf::Message {
+ public:
+  PReLUParameter();
+  virtual ~PReLUParameter();
+
+  PReLUParameter(const PReLUParameter& from);
+
+  inline PReLUParameter& operator=(const PReLUParameter& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PReLUParameter& default_instance();
+
+  void Swap(PReLUParameter* other);
+
+  // implements Message ----------------------------------------------
+
+  PReLUParameter* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PReLUParameter& from);
+  void MergeFrom(const PReLUParameter& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .caffe.FillerParameter filler = 1;
+  inline bool has_filler() const;
+  inline void clear_filler();
+  static const int kFillerFieldNumber = 1;
+  inline const ::caffe::FillerParameter& filler() const;
+  inline ::caffe::FillerParameter* mutable_filler();
+  inline ::caffe::FillerParameter* release_filler();
+  inline void set_allocated_filler(::caffe::FillerParameter* filler);
+
+  // optional bool channel_shared = 2 [default = false];
+  inline bool has_channel_shared() const;
+  inline void clear_channel_shared();
+  static const int kChannelSharedFieldNumber = 2;
+  inline bool channel_shared() const;
+  inline void set_channel_shared(bool value);
+
+  // @@protoc_insertion_point(class_scope:caffe.PReLUParameter)
+ private:
+  inline void set_has_filler();
+  inline void clear_has_filler();
+  inline void set_has_channel_shared();
+  inline void clear_has_channel_shared();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::caffe::FillerParameter* filler_;
+  bool channel_shared_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_caffe_2eproto();
+  friend void protobuf_AssignDesc_caffe_2eproto();
+  friend void protobuf_ShutdownFile_caffe_2eproto();
+
+  void InitAsDefaultInstance();
+  static PReLUParameter* default_instance_;
 };
 // ===================================================================
 
@@ -11812,15 +11929,53 @@ inline void LayerParameter::set_allocated_power_param(::caffe::PowerParameter* p
   }
 }
 
-// optional .caffe.PythonParameter python_param = 130;
-inline bool LayerParameter::has_python_param() const {
+// optional .caffe.PReLUParameter prelu_param = 131;
+inline bool LayerParameter::has_prelu_param() const {
   return (_has_bits_[1] & 0x00000002u) != 0;
 }
-inline void LayerParameter::set_has_python_param() {
+inline void LayerParameter::set_has_prelu_param() {
   _has_bits_[1] |= 0x00000002u;
 }
-inline void LayerParameter::clear_has_python_param() {
+inline void LayerParameter::clear_has_prelu_param() {
   _has_bits_[1] &= ~0x00000002u;
+}
+inline void LayerParameter::clear_prelu_param() {
+  if (prelu_param_ != NULL) prelu_param_->::caffe::PReLUParameter::Clear();
+  clear_has_prelu_param();
+}
+inline const ::caffe::PReLUParameter& LayerParameter::prelu_param() const {
+  return prelu_param_ != NULL ? *prelu_param_ : *default_instance_->prelu_param_;
+}
+inline ::caffe::PReLUParameter* LayerParameter::mutable_prelu_param() {
+  set_has_prelu_param();
+  if (prelu_param_ == NULL) prelu_param_ = new ::caffe::PReLUParameter;
+  return prelu_param_;
+}
+inline ::caffe::PReLUParameter* LayerParameter::release_prelu_param() {
+  clear_has_prelu_param();
+  ::caffe::PReLUParameter* temp = prelu_param_;
+  prelu_param_ = NULL;
+  return temp;
+}
+inline void LayerParameter::set_allocated_prelu_param(::caffe::PReLUParameter* prelu_param) {
+  delete prelu_param_;
+  prelu_param_ = prelu_param;
+  if (prelu_param) {
+    set_has_prelu_param();
+  } else {
+    clear_has_prelu_param();
+  }
+}
+
+// optional .caffe.PythonParameter python_param = 130;
+inline bool LayerParameter::has_python_param() const {
+  return (_has_bits_[1] & 0x00000004u) != 0;
+}
+inline void LayerParameter::set_has_python_param() {
+  _has_bits_[1] |= 0x00000004u;
+}
+inline void LayerParameter::clear_has_python_param() {
+  _has_bits_[1] &= ~0x00000004u;
 }
 inline void LayerParameter::clear_python_param() {
   if (python_param_ != NULL) python_param_->::caffe::PythonParameter::Clear();
@@ -11852,13 +12007,13 @@ inline void LayerParameter::set_allocated_python_param(::caffe::PythonParameter*
 
 // optional .caffe.ReLUParameter relu_param = 123;
 inline bool LayerParameter::has_relu_param() const {
-  return (_has_bits_[1] & 0x00000004u) != 0;
+  return (_has_bits_[1] & 0x00000008u) != 0;
 }
 inline void LayerParameter::set_has_relu_param() {
-  _has_bits_[1] |= 0x00000004u;
+  _has_bits_[1] |= 0x00000008u;
 }
 inline void LayerParameter::clear_has_relu_param() {
-  _has_bits_[1] &= ~0x00000004u;
+  _has_bits_[1] &= ~0x00000008u;
 }
 inline void LayerParameter::clear_relu_param() {
   if (relu_param_ != NULL) relu_param_->::caffe::ReLUParameter::Clear();
@@ -11890,13 +12045,13 @@ inline void LayerParameter::set_allocated_relu_param(::caffe::ReLUParameter* rel
 
 // optional .caffe.SigmoidParameter sigmoid_param = 124;
 inline bool LayerParameter::has_sigmoid_param() const {
-  return (_has_bits_[1] & 0x00000008u) != 0;
+  return (_has_bits_[1] & 0x00000010u) != 0;
 }
 inline void LayerParameter::set_has_sigmoid_param() {
-  _has_bits_[1] |= 0x00000008u;
+  _has_bits_[1] |= 0x00000010u;
 }
 inline void LayerParameter::clear_has_sigmoid_param() {
-  _has_bits_[1] &= ~0x00000008u;
+  _has_bits_[1] &= ~0x00000010u;
 }
 inline void LayerParameter::clear_sigmoid_param() {
   if (sigmoid_param_ != NULL) sigmoid_param_->::caffe::SigmoidParameter::Clear();
@@ -11928,13 +12083,13 @@ inline void LayerParameter::set_allocated_sigmoid_param(::caffe::SigmoidParamete
 
 // optional .caffe.SoftmaxParameter softmax_param = 125;
 inline bool LayerParameter::has_softmax_param() const {
-  return (_has_bits_[1] & 0x00000010u) != 0;
+  return (_has_bits_[1] & 0x00000020u) != 0;
 }
 inline void LayerParameter::set_has_softmax_param() {
-  _has_bits_[1] |= 0x00000010u;
+  _has_bits_[1] |= 0x00000020u;
 }
 inline void LayerParameter::clear_has_softmax_param() {
-  _has_bits_[1] &= ~0x00000010u;
+  _has_bits_[1] &= ~0x00000020u;
 }
 inline void LayerParameter::clear_softmax_param() {
   if (softmax_param_ != NULL) softmax_param_->::caffe::SoftmaxParameter::Clear();
@@ -11966,13 +12121,13 @@ inline void LayerParameter::set_allocated_softmax_param(::caffe::SoftmaxParamete
 
 // optional .caffe.SliceParameter slice_param = 126;
 inline bool LayerParameter::has_slice_param() const {
-  return (_has_bits_[1] & 0x00000020u) != 0;
+  return (_has_bits_[1] & 0x00000040u) != 0;
 }
 inline void LayerParameter::set_has_slice_param() {
-  _has_bits_[1] |= 0x00000020u;
+  _has_bits_[1] |= 0x00000040u;
 }
 inline void LayerParameter::clear_has_slice_param() {
-  _has_bits_[1] &= ~0x00000020u;
+  _has_bits_[1] &= ~0x00000040u;
 }
 inline void LayerParameter::clear_slice_param() {
   if (slice_param_ != NULL) slice_param_->::caffe::SliceParameter::Clear();
@@ -12004,13 +12159,13 @@ inline void LayerParameter::set_allocated_slice_param(::caffe::SliceParameter* s
 
 // optional .caffe.TanHParameter tanh_param = 127;
 inline bool LayerParameter::has_tanh_param() const {
-  return (_has_bits_[1] & 0x00000040u) != 0;
+  return (_has_bits_[1] & 0x00000080u) != 0;
 }
 inline void LayerParameter::set_has_tanh_param() {
-  _has_bits_[1] |= 0x00000040u;
+  _has_bits_[1] |= 0x00000080u;
 }
 inline void LayerParameter::clear_has_tanh_param() {
-  _has_bits_[1] &= ~0x00000040u;
+  _has_bits_[1] &= ~0x00000080u;
 }
 inline void LayerParameter::clear_tanh_param() {
   if (tanh_param_ != NULL) tanh_param_->::caffe::TanHParameter::Clear();
@@ -12042,13 +12197,13 @@ inline void LayerParameter::set_allocated_tanh_param(::caffe::TanHParameter* tan
 
 // optional .caffe.ThresholdParameter threshold_param = 128;
 inline bool LayerParameter::has_threshold_param() const {
-  return (_has_bits_[1] & 0x00000080u) != 0;
+  return (_has_bits_[1] & 0x00000100u) != 0;
 }
 inline void LayerParameter::set_has_threshold_param() {
-  _has_bits_[1] |= 0x00000080u;
+  _has_bits_[1] |= 0x00000100u;
 }
 inline void LayerParameter::clear_has_threshold_param() {
-  _has_bits_[1] &= ~0x00000080u;
+  _has_bits_[1] &= ~0x00000100u;
 }
 inline void LayerParameter::clear_threshold_param() {
   if (threshold_param_ != NULL) threshold_param_->::caffe::ThresholdParameter::Clear();
@@ -12080,13 +12235,13 @@ inline void LayerParameter::set_allocated_threshold_param(::caffe::ThresholdPara
 
 // optional .caffe.WindowDataParameter window_data_param = 129;
 inline bool LayerParameter::has_window_data_param() const {
-  return (_has_bits_[1] & 0x00000100u) != 0;
+  return (_has_bits_[1] & 0x00000200u) != 0;
 }
 inline void LayerParameter::set_has_window_data_param() {
-  _has_bits_[1] |= 0x00000100u;
+  _has_bits_[1] |= 0x00000200u;
 }
 inline void LayerParameter::clear_has_window_data_param() {
-  _has_bits_[1] &= ~0x00000100u;
+  _has_bits_[1] &= ~0x00000200u;
 }
 inline void LayerParameter::clear_window_data_param() {
   if (window_data_param_ != NULL) window_data_param_->::caffe::WindowDataParameter::Clear();
@@ -13605,6 +13760,28 @@ inline ::google::protobuf::uint32 HDF5DataParameter::batch_size() const {
 inline void HDF5DataParameter::set_batch_size(::google::protobuf::uint32 value) {
   set_has_batch_size();
   batch_size_ = value;
+}
+
+// optional bool shuffle = 3 [default = false];
+inline bool HDF5DataParameter::has_shuffle() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void HDF5DataParameter::set_has_shuffle() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void HDF5DataParameter::clear_has_shuffle() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void HDF5DataParameter::clear_shuffle() {
+  shuffle_ = false;
+  clear_has_shuffle();
+}
+inline bool HDF5DataParameter::shuffle() const {
+  return shuffle_;
+}
+inline void HDF5DataParameter::set_shuffle(bool value) {
+  set_has_shuffle();
+  shuffle_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -18532,6 +18709,70 @@ inline void V0LayerParameter::set_allocated_hdf5_output_param(::caffe::HDF5Outpu
   } else {
     clear_has_hdf5_output_param();
   }
+}
+
+// -------------------------------------------------------------------
+
+// PReLUParameter
+
+// optional .caffe.FillerParameter filler = 1;
+inline bool PReLUParameter::has_filler() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PReLUParameter::set_has_filler() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PReLUParameter::clear_has_filler() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PReLUParameter::clear_filler() {
+  if (filler_ != NULL) filler_->::caffe::FillerParameter::Clear();
+  clear_has_filler();
+}
+inline const ::caffe::FillerParameter& PReLUParameter::filler() const {
+  return filler_ != NULL ? *filler_ : *default_instance_->filler_;
+}
+inline ::caffe::FillerParameter* PReLUParameter::mutable_filler() {
+  set_has_filler();
+  if (filler_ == NULL) filler_ = new ::caffe::FillerParameter;
+  return filler_;
+}
+inline ::caffe::FillerParameter* PReLUParameter::release_filler() {
+  clear_has_filler();
+  ::caffe::FillerParameter* temp = filler_;
+  filler_ = NULL;
+  return temp;
+}
+inline void PReLUParameter::set_allocated_filler(::caffe::FillerParameter* filler) {
+  delete filler_;
+  filler_ = filler;
+  if (filler) {
+    set_has_filler();
+  } else {
+    clear_has_filler();
+  }
+}
+
+// optional bool channel_shared = 2 [default = false];
+inline bool PReLUParameter::has_channel_shared() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void PReLUParameter::set_has_channel_shared() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void PReLUParameter::clear_has_channel_shared() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void PReLUParameter::clear_channel_shared() {
+  channel_shared_ = false;
+  clear_has_channel_shared();
+}
+inline bool PReLUParameter::channel_shared() const {
+  return channel_shared_;
+}
+inline void PReLUParameter::set_channel_shared(bool value) {
+  set_has_channel_shared();
+  channel_shared_ = value;
 }
 
 

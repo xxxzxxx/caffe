@@ -3,6 +3,7 @@
 
 #include "caffe/glog_alternate.hpp"
 
+#include <unistd.h>
 #include <memory>
 #include <climits>
 #include <cmath>
@@ -61,7 +62,6 @@ namespace cv { class Mat; }
 namespace caffe {
 
 // Common functions and classes from std that caffe often uses.
-using std::shared_ptr;
 using std::fstream;
 using std::ios;
 using std::isnan;
@@ -72,6 +72,7 @@ using std::map;
 using std::ostringstream;
 using std::pair;
 using std::set;
+using std::shared_ptr;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -93,7 +94,7 @@ class Caffe {
   }
   enum Brew { CPU, GPU };
 
-  // This random number generator facade hides boost and CUDA rng
+  // This random number generator facade hides std and CUDA rng
   // implementation from one another (for cross-platform compatibility).
   class RNG {
    public:
@@ -107,7 +108,7 @@ class Caffe {
     shared_ptr<Generator> generator_;
   };
 
-  // Getters for boost rng, curand, and cublas handles
+  // Getters for std rng, curand, and cublas handles
   inline static RNG& rng_stream() {
     if (!Get().random_generator_) {
       Get().random_generator_.reset(new RNG());
@@ -129,7 +130,7 @@ class Caffe {
   // freed in a non-pinned way, which may cause problems - I haven't verified
   // it personally but better to note it here in the header file.
   inline static void set_mode(Brew mode) { Get().mode_ = mode; }
-  // Sets the random seed of both boost and curand
+  // Sets the random seed of both std and curand
   static void set_random_seed(const unsigned int seed);
   // Sets the device. Since we have cublas and curand stuff, set device also
   // requires us to reset those values.

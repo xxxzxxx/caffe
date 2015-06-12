@@ -54,6 +54,7 @@ src/caffe/layers/mvn_layer.cpp \
 src/caffe/layers/neuron_layer.cpp \
 src/caffe/layers/pooling_layer.cpp \
 src/caffe/layers/power_layer.cpp \
+src/caffe/layers/prelu_layer.cpp \
 src/caffe/layers/relu_layer.cpp \
 src/caffe/layers/sigmoid_cross_entropy_loss_layer.cpp \
 src/caffe/layers/sigmoid_layer.cpp \
@@ -94,8 +95,8 @@ OBJS := $(PROTO_OBJS) $(CXX_OBJS)
 COMMON_FLAGS += -DCPU_ONLY
 
 INCLUDE_DIRS += ./include ./include/caffe/proto
-LIBRARIES:=protobuf opencv_core opencv_highgui opencv_imgproc boost_thread boost_system boost_date_time
-LIBRARY_DIRS:=/usr/local/lib
+LIBRARIES := protobuf opencv_core opencv_highgui opencv_imgproc
+LIBRARY_DIRS := /usr/local/lib
 
 ifeq ($(USE_EIGEN), y)
 	COMMON_FLAGS += -DUSE_EIGEN
