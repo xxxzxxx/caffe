@@ -3,7 +3,11 @@
 #include <cstdio>
 #include <cstdlib>
 
+#ifdef USE_GLOG
 #include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 #include "gtest/gtest.h"
 
 #include "caffe/test/test_caffe_main.hpp"

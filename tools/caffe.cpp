@@ -1,11 +1,19 @@
-#include <glog/logging.h>
+#ifdef USE_GLOG
+#include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 
 #include <cstring>
 #include <map>
 #include <string>
 #include <vector>
 
+#ifdef USE_BOOST
 #include "boost/algorithm/string.hpp"
+#else
+#include <iomanip>
+#endif  // USE_BOOST
 #include "caffe/caffe.hpp"
 
 using caffe::Blob;
@@ -16,7 +24,7 @@ using caffe::shared_ptr;
 using caffe::Timer;
 using caffe::vector;
 
-
+#ifdef USE_GFLAGS
 DEFINE_int32(gpu, -1,
     "Run in GPU mode on given device ID.");
 DEFINE_string(solver, "",
@@ -81,7 +89,11 @@ RegisterBrewFunction(device_query);
 // test nets.
 void CopyLayers(caffe::Solver<float>* solver, const std::string& model_list) {
   std::vector<std::string> model_names;
+#ifdef USE_BOOST
   boost::split(model_names, model_list, boost::is_any_of(",") );
+#else
+  caffe::string_split(&model_names, model_list, ",");
+#endif  // USE_BOOST
   for (int i = 0; i < model_names.size(); ++i) {
     LOG(INFO) << "Finetuning from " << model_names[i];
     solver->net()->CopyTrainedLayersFrom(model_names[i]);
@@ -291,8 +303,10 @@ int time() {
 RegisterBrewFunction(time);
 
 int main(int argc, char** argv) {
+#ifdef USE_GLOG
   // Print output to stderr (while still logging).
   FLAGS_alsologtostderr = 1;
+#endif  // USE_GLOG
   // Usage message.
   gflags::SetUsageMessage("command line brew\n"
       "usage: caffe <command> <args>\n\n"
@@ -309,3 +323,8 @@ int main(int argc, char** argv) {
     gflags::ShowUsageWithFlagsRestrict(argv[0], "tools/caffe");
   }
 }
+#else
+int main(int argc, char** argv) {
+  LOG(FATAL) << "Compile with gflags to use this.";
+}
+#endif  // requires gflags

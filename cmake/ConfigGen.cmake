@@ -56,6 +56,18 @@ function(caffe_generate_export_configs)
     list(APPEND Caffe_DEFINITIONS -DCPU_ONLY)
   endif()
 
+  if(USE_BOOST)
+    list(APPEND Caffe_DEFINITIONS -DUSE_BOOST)
+  endif()
+
+  if(USE_GLOG)
+    list(APPEND Caffe_DEFINITIONS -DUSE_GLOG)
+  endif()
+
+  if(USE_GFLAGS)
+    list(APPEND Caffe_DEFINITIONS -DUSE_GFLAGS)
+  endif()
+
   if(USE_OPENCV)
     list(APPEND Caffe_DEFINITIONS -DUSE_OPENCV)
   endif()

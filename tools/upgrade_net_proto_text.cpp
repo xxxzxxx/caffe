@@ -16,7 +16,9 @@ using std::ofstream;
 using namespace caffe;  // NOLINT(build/namespaces)
 
 int main(int argc, char** argv) {
+#ifdef USE_GLOG
   ::google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
   if (argc != 3) {
     LOG(ERROR) << "Usage: "
         << "upgrade_net_proto_text v0_net_proto_file_in net_proto_file_out";

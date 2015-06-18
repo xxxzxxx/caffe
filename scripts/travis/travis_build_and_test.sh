@@ -39,6 +39,9 @@ else
     export USE_SNAPPY=1
     export USE_HDF5=1
   fi
+  export USE_BOOST=1
+  export USE_GLOG=1
+  export USE_GFLAGS=1
   $MAKE all test pycaffe warn lint || true
   if ! $WITH_CUDA; then
     $MAKE runtest

@@ -1,6 +1,6 @@
-#include <glog/logging.h>
 #include <cstdio>
 #include <ctime>
+#include <unistd.h>
 
 #include "caffe/common.hpp"
 #include "caffe/util/rng.hpp"
@@ -8,6 +8,10 @@
 namespace caffe {
 
 shared_ptr<Caffe> Caffe::singleton_;
+#ifndef USE_GLOG
+nullstream __nullstream;
+bool LogMessage::_enable = false;
+#endif  // init glog alternate
 
 // random seeding
 int64_t cluster_seedgen(void) {
@@ -31,12 +35,16 @@ int64_t cluster_seedgen(void) {
 
 
 void GlobalInit(int* pargc, char*** pargv) {
+#ifdef USE_GFLAGS
   // Google flags.
   ::gflags::ParseCommandLineFlags(pargc, pargv, true);
+#endif  // USE_GFLAGS
+#ifdef USE_GLOG
   // Google logging.
   ::google::InitGoogleLogging(*(pargv)[0]);
   // Provide a backtrace on segfault.
   ::google::InstallFailureSignalHandler();
+#endif  // USE_GLOG
 }
 
 #ifdef CPU_ONLY  // CPU-only Caffe.

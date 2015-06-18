@@ -3,6 +3,19 @@ cmake_minimum_required(VERSION 2.8.7)
 # ---[ Caffe project
 project(Caffe C CXX)
 
+# Search packages for host system instead of packages for target system
+# in case of cross compilation these macro should be defined by toolchain file
+if(NOT COMMAND find_host_package)
+  macro(find_host_package)
+    find_package(${ARGN})
+  endmacro()
+endif()
+if(NOT COMMAND find_host_program)
+  macro(find_host_program)
+    find_program(${ARGN})
+  endmacro()
+endif()
+
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
@@ -23,6 +36,9 @@ set(python_version "2" CACHE STRING "Specify which python version to use")
 caffe_option(BUILD_matlab "Build Matlab wrapper" OFF IF UNIX OR APPLE)
 caffe_option(BUILD_docs   "Build documentation" ON IF UNIX OR APPLE)
 caffe_option(BUILD_python_layer "Build the Caffe python layer" ON)
+caffe_option(USE_BOOST "Build with Boost support" ON)
+caffe_option(USE_GLOG "Build with glog support" ON)
+caffe_option(USE_GFLAGS "Build with gflags support" ON)
 caffe_option(USE_LMDB "Build with lmdb" ON)
 caffe_option(USE_LEVELDB "Build with levelDB" ON)
 caffe_option(USE_HDF5 "Build with hdf5 support" ON)
@@ -40,6 +56,10 @@ endif()
 if(USE_libstdcpp)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
   message("-- Warning: forcing libstdc++ (controlled by USE_libstdcpp option in cmake)")
+endif()
+
+if(NOT USE_BOOST)
+  caffe_enable_cpp11_support()
 endif()
 
 add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)

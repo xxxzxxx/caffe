@@ -4,6 +4,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #endif
+#ifndef USE_BOOST
+#include <iomanip>
+#endif
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -232,7 +235,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  ::google::InitGoogleLogging(argv[0]);
+#ifdef USE_GLOG
+    google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
 
   string model_file   = argv[1];
   string trained_file = argv[2];

@@ -8,7 +8,11 @@
 #include <fstream>  // NOLINT(readability/streams)
 #include <string>
 
+#ifdef USE_GLOG
 #include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 #include "google/protobuf/text_format.h"
 #include "stdint.h"
 
@@ -118,7 +122,9 @@ int main(int argc, char** argv) {
            "    http://yann.lecun.com/exdb/mnist/\n"
            "You should gunzip them after downloading.\n");
   } else {
+#ifdef USE_GLOG
     google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
     convert_dataset(argv[1], argv[2], argv[3]);
   }
   return 0;

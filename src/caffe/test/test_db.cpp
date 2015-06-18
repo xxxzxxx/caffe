@@ -1,7 +1,6 @@
 #if defined(USE_LEVELDB) && defined(USE_LMDB) && defined(USE_OPENCV)
 #include <string>
 
-#include "boost/scoped_ptr.hpp"
 #include "gtest/gtest.h"
 
 #include "caffe/common.hpp"
@@ -12,8 +11,6 @@
 #include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
-
-using boost::scoped_ptr;
 
 template <typename TypeParam>
 class DBTest : public ::testing::Test {

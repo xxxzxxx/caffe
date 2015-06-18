@@ -170,8 +170,17 @@ ifneq ($(CPU_ONLY), 1)
 	LIBRARIES := cudart cublas curand
 endif
 
-LIBRARIES += glog gflags protobuf boost_system m
+LIBRARIES += protobuf m
 
+ifeq ($(USE_BOOST), 1)
+  LIBRARIES += boost_system
+endif
+ifeq ($(USE_GLOG), 1)
+  LIBRARIES += glog
+endif
+ifeq ($(USE_GFLAGS), 1)
+  LIBRARIES += gflags
+endif
 ifeq ($(USE_LEVELDB), 1)
   LIBRARIES += leveldb
 endif
@@ -246,9 +255,12 @@ ifeq ($(LINUX), 1)
 	ifeq ($(shell echo | awk '{exit $(GCCVERSION) < 4.6;}'), 1)
 		WARNINGS += -Wno-uninitialized
 	endif
-	# boost::thread is reasonably called boost_thread (compare OS X)
+	ifeq ($(USE_BOOST), 1)
+		# boost::thread is reasonably called boost_thread (compare OS X)
+		LIBRARIES += boost_thread
+	endif
 	# We will also explicitly add stdc++ to the link target.
-	LIBRARIES += boost_thread stdc++
+	LIBRARIES += stdc++
 endif
 
 # OS X:
@@ -267,8 +279,10 @@ ifeq ($(OSX), 1)
 	endif
 	# gtest needs to use its own tuple to not conflict with clang
 	COMMON_FLAGS += -DGTEST_USE_OWN_TR1_TUPLE=1
-	# boost::thread is called boost_thread-mt to mark multithreading on OS X
-	LIBRARIES += boost_thread-mt
+	ifeq ($(USE_BOOST), 1)
+		# boost::thread is called boost_thread-mt to mark multithreading on OS X
+		LIBRARIES += boost_thread-mt
+	endif
 	# we need to explicitly ask for the rpath to be obeyed
 	DYNAMIC_FLAGS := -install_name @rpath/libcaffe.so
 	ORIGIN := @loader_path
@@ -303,6 +317,21 @@ endif
 ifeq ($(USE_CUDNN), 1)
 	LIBRARIES += cudnn
 	COMMON_FLAGS += -DUSE_CUDNN
+endif
+
+# boost configuration.
+ifeq ($(USE_BOOST), 1)
+	COMMON_FLAGS += -DUSE_BOOST
+endif
+
+# glog configuration.
+ifeq ($(USE_GLOG), 1)
+	COMMON_FLAGS += -DUSE_GLOG
+endif
+
+# gflafs configuration.
+ifeq ($(USE_GFLAGS), 1)
+	COMMON_FLAGS += -DUSE_GFLAGS
 endif
 
 # i/o libraries configuration
@@ -382,10 +411,19 @@ CXXFLAGS += -MMD -MP
 # Complete build flags.
 COMMON_FLAGS += $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
 CXXFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
+ifneq ($(USE_BOOST), 1)
+	CXXFLAGS += -std=c++11
+endif
 NVCCFLAGS += -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
+ifneq ($(USE_BOOST), 1)
+	NVCCFLAGS += -std=c++11
+endif
 # mex may invoke an older gcc that is too liberal with -Wuninitalized
 MATLAB_CXXFLAGS := $(CXXFLAGS) -Wno-uninitialized
 LINKFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
+ifneq ($(USE_BOOST), 1)
+	LINKFLAGS += -std=c++11
+endif
 
 USE_PKG_CONFIG ?= 0
 ifeq ($(USE_PKG_CONFIG), 1)
@@ -502,7 +540,7 @@ runtest: $(TEST_ALL_BIN)
 
 pytest: py
 	cd python; python -m unittest discover -s caffe/test
-	
+
 mattest: mat
 	cd matlab; $(MATLAB_DIR)/bin/matlab -nodisplay -r 'caffe.run_tests(), exit()'
 

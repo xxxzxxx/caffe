@@ -6,8 +6,14 @@
 // The MNIST dataset could be downloaded at
 //    http://yann.lecun.com/exdb/mnist/
 
+#ifdef USE_GFLAGS
 #include <gflags/gflags.h>
-#include <glog/logging.h>
+#endif   // USE_GFLAGS
+#ifdef USE_GLOG
+#include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 #include <google/protobuf/text_format.h>
 
 #if defined(USE_LEVELDB) && defined(USE_LMDB)
@@ -29,6 +35,7 @@
 using namespace caffe;  // NOLINT(build/namespaces)
 using std::string;
 
+#ifdef USE_GFLAGS
 DEFINE_string(backend, "lmdb", "The backend for storing the result");
 
 uint32_t swap_endian(uint32_t val) {
@@ -197,7 +204,9 @@ int main(int argc, char** argv) {
     gflags::ShowUsageWithFlagsRestrict(argv[0],
         "examples/mnist/convert_mnist_data");
   } else {
+#ifdef USE_GLOG
     google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
     convert_dataset(argv[1], argv[2], argv[3], db_backend);
   }
   return 0;
@@ -207,3 +216,8 @@ int main(int argc, char** argv) {
   LOG(FATAL) << "This example requires LevelDB and LMDB.";
 }
 #endif  // requires LevelDB and LMDB
+#else
+int main(int argc, char** argv) {
+  LOG(FATAL) << "This example requires gflags.";
+}
+#endif  // requires gflags

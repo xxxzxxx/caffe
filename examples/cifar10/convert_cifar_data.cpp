@@ -9,8 +9,20 @@
 #include <fstream>  // NOLINT(readability/streams)
 #include <string>
 
+#ifdef USE_BOOST
 #include "boost/scoped_ptr.hpp"
+using boost::scoped_ptr;
+#else
+#include <memory>
+template <typename T>
+using scoped_ptr = typename std::unique_ptr<T>;
+#endif  // USE_BOOST
+
+#ifdef USE_GLOG
 #include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 #include "google/protobuf/text_format.h"
 #include "stdint.h"
 
@@ -18,7 +30,6 @@
 #include "caffe/util/db.hpp"
 
 using caffe::Datum;
-using boost::scoped_ptr;
 using std::string;
 namespace db = caffe::db;
 
@@ -102,7 +113,9 @@ int main(int argc, char** argv) {
            "    http://www.cs.toronto.edu/~kriz/cifar.html\n"
            "You should gunzip them after downloading.\n");
   } else {
+#ifdef USE_GLOG
     google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
     convert_dataset(string(argv[1]), string(argv[2]), string(argv[3]));
   }
   return 0;

@@ -1,8 +1,6 @@
 #ifndef CAFFE_UTIL_BENCHMARK_H_
 #define CAFFE_UTIL_BENCHMARK_H_
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "caffe/util/device_alternate.hpp"
 
 namespace caffe {
@@ -31,8 +29,16 @@ class Timer {
   cudaEvent_t start_gpu_;
   cudaEvent_t stop_gpu_;
 #endif
+#ifdef USE_BOOST
   boost::posix_time::ptime start_cpu_;
   boost::posix_time::ptime stop_cpu_;
+#else
+  typedef std::chrono::high_resolution_clock clock;
+  typedef std::chrono::microseconds microseconds;
+  typedef std::chrono::milliseconds milliseconds;
+  clock::time_point start_cpu_;
+  clock::time_point stop_cpu_;
+#endif    // USE_BOOST
   float elapsed_milliseconds_;
   float elapsed_microseconds_;
 };

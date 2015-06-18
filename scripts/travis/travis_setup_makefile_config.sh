@@ -11,6 +11,12 @@ if $WITH_CUDA; then
   echo "CUDA_ARCH := $GENCODE" >> Makefile.config
 fi
 
+# Remove boost, glog, gflags settings from Makefile.config
+# to avoid conflicts with CI configuration
+sed -i -e '/USE_BOOST/d' Makefile.config
+sed -i -e '/USE_GLOG/d' Makefile.config
+sed -i -e '/USE_GFLAGS/d' Makefile.config
+
 # Remove IO library settings from Makefile.config
 # to avoid conflicts with CI configuration
 sed -i -e '/USE_LMDB/d' Makefile.config

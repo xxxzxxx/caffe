@@ -1,7 +1,11 @@
 #ifndef CAFFE_TEST_GRADIENT_CHECK_UTIL_H_
 #define CAFFE_TEST_GRADIENT_CHECK_UTIL_H_
 
+#ifdef USE_GLOG
 #include <glog/logging.h>
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 #include <gtest/gtest.h>
 
 #include <algorithm>

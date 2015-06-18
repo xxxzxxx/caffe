@@ -5,7 +5,6 @@
 #include <utility>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
 #ifdef USE_HDF5
 #include "hdf5.h"
 #endif

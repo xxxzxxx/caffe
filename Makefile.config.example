@@ -7,6 +7,10 @@
 # CPU-only switch (uncomment to build without GPU support).
 # CPU_ONLY := 1
 
+USE_BOOST := 1
+USE_GLOG := 1
+USE_GFLAGS := 1
+
 # Comment out to disable IO dependencies
 USE_LEVELDB := 1
 USE_LMDB := 1

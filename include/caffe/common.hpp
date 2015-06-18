@@ -1,9 +1,14 @@
 #ifndef CAFFE_COMMON_HPP_
 #define CAFFE_COMMON_HPP_
 
-#include <boost/shared_ptr.hpp>
+#ifdef USE_GFLAGS
 #include <gflags/gflags.h>
+#endif  // USE_GFLAGS
+#ifdef USE_GLOG
 #include <glog/logging.h>
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 
 #include <climits>
 #include <cmath>
@@ -16,8 +21,10 @@
 #include <utility>  // pair
 #include <vector>
 
+#include "caffe/util/boost_or_std.hpp"
 #include "caffe/util/device_alternate.hpp"
 
+#ifdef USE_GFLAGS
 // gflags 2.1 issue: namespace google was changed to gflags without warning.
 // Luckily we will be able to use GFLAGS_GFLAGS_H_ to detect if it is version
 // 2.1. If yes, we will add a temporary solution to redirect the namespace.
@@ -26,6 +33,7 @@
 #ifndef GFLAGS_GFLAGS_H_
 namespace gflags = google;
 #endif  // GFLAGS_GFLAGS_H_
+#endif  // USE_GFLAGS
 
 // Disable the copy and assignment operator for a class.
 #define DISABLE_COPY_AND_ASSIGN(classname) \
@@ -70,10 +78,6 @@ namespace cv { class Mat; }
 
 namespace caffe {
 
-// We will use the boost shared_ptr instead of the new C++11 one mainly
-// because cuda does not work (at least now) well with C++11 features.
-using boost::shared_ptr;
-
 // Common functions and classes from std that caffe often uses.
 using std::fstream;
 using std::ios;
@@ -106,7 +110,7 @@ class Caffe {
   }
   enum Brew { CPU, GPU };
 
-  // This random number generator facade hides boost and CUDA rng
+  // This random number generator facade hides boost/std and CUDA rng
   // implementation from one another (for cross-platform compatibility).
   class RNG {
    public:
@@ -120,7 +124,7 @@ class Caffe {
     shared_ptr<Generator> generator_;
   };
 
-  // Getters for boost rng, curand, and cublas handles
+  // Getters for boost/std rng, curand, and cublas handles
   inline static RNG& rng_stream() {
     if (!Get().random_generator_) {
       Get().random_generator_.reset(new RNG());
@@ -142,7 +146,7 @@ class Caffe {
   // freed in a non-pinned way, which may cause problems - I haven't verified
   // it personally but better to note it here in the header file.
   inline static void set_mode(Brew mode) { Get().mode_ = mode; }
-  // Sets the random seed of both boost and curand
+  // Sets the random seed of both boost/std and curand
   static void set_random_seed(const unsigned int seed);
   // Sets the device. Since we have cublas and curand stuff, set device also
   // requires us to reset those values.

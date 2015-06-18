@@ -1,6 +1,3 @@
-#include <boost/math/special_functions/next.hpp>
-#include <boost/random.hpp>
-
 #include <limits>
 
 #include "caffe/common.hpp"
@@ -232,8 +229,11 @@ unsigned int caffe_rng_rand() {
 
 template <typename Dtype>
 Dtype caffe_nextafter(const Dtype b) {
-  return boost::math::nextafter<Dtype>(
-      b, std::numeric_limits<Dtype>::max());
+#ifdef USE_BOOST
+  return boost::math::nextafter<Dtype>(b, std::numeric_limits<Dtype>::max());
+#else
+  return std::nextafter(b, std::numeric_limits<Dtype>::max());
+#endif  // USE_BOOST
 }
 
 template
@@ -247,9 +247,16 @@ void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_LE(a, b);
+#ifdef USE_BOOST
   boost::uniform_real<Dtype> random_distribution(a, caffe_nextafter<Dtype>(b));
   boost::variate_generator<caffe::rng_t*, boost::uniform_real<Dtype> >
       variate_generator(caffe_rng(), random_distribution);
+#else
+  std::uniform_real_distribution<Dtype>
+      random_distribution(a, caffe_nextafter<Dtype>(b));
+  std::function<Dtype()>
+      variate_generator = bind(random_distribution, std::ref(*caffe_rng()));
+#endif  // USE_BOOST
   for (int i = 0; i < n; ++i) {
     r[i] = variate_generator();
   }
@@ -269,9 +276,15 @@ void caffe_rng_gaussian(const int n, const Dtype a,
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_GT(sigma, 0);
+#ifdef USE_BOOST
   boost::normal_distribution<Dtype> random_distribution(a, sigma);
   boost::variate_generator<caffe::rng_t*, boost::normal_distribution<Dtype> >
       variate_generator(caffe_rng(), random_distribution);
+#else
+  std::normal_distribution<> random_distribution(a, sigma);
+  std::function<Dtype()>
+      variate_generator= bind(random_distribution, std::ref(*caffe_rng()));
+#endif  // USE_BOOST
   for (int i = 0; i < n; ++i) {
     r[i] = variate_generator();
   }
@@ -291,9 +304,15 @@ void caffe_rng_bernoulli(const int n, const Dtype p, int* r) {
   CHECK(r);
   CHECK_GE(p, 0);
   CHECK_LE(p, 1);
+#ifdef USE_BOOST
   boost::bernoulli_distribution<Dtype> random_distribution(p);
   boost::variate_generator<caffe::rng_t*, boost::bernoulli_distribution<Dtype> >
       variate_generator(caffe_rng(), random_distribution);
+#else
+  std::bernoulli_distribution random_distribution(p);
+  std::function<Dtype()>
+      variate_generator = bind(random_distribution, std::ref(*caffe_rng()));
+#endif  // USE_BOOST
   for (int i = 0; i < n; ++i) {
     r[i] = variate_generator();
   }
@@ -311,9 +330,15 @@ void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r) {
   CHECK(r);
   CHECK_GE(p, 0);
   CHECK_LE(p, 1);
+#ifdef USE_BOOST
   boost::bernoulli_distribution<Dtype> random_distribution(p);
   boost::variate_generator<caffe::rng_t*, boost::bernoulli_distribution<Dtype> >
       variate_generator(caffe_rng(), random_distribution);
+#else
+  std::bernoulli_distribution random_distribution(p);
+  std::function<Dtype() >
+      variate_generator = bind(random_distribution, std::ref(*caffe_rng()));
+#endif  // USE_BOOST
   for (int i = 0; i < n; ++i) {
     r[i] = static_cast<unsigned int>(variate_generator());
   }

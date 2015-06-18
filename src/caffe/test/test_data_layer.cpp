@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
 #include "gtest/gtest.h"
 
 #include "caffe/blob.hpp"
@@ -16,8 +15,6 @@
 #include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
-
-using boost::scoped_ptr;
 
 template <typename TypeParam>
 class DataLayerTest : public MultiDeviceTest<TypeParam> {

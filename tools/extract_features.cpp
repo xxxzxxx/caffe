@@ -2,7 +2,9 @@
 #include <string>
 #include <vector>
 
+#ifdef USE_BOOST
 #include "boost/algorithm/string.hpp"
+#endif  // USE_BOOST
 #include "google/protobuf/text_format.h"
 
 #include "caffe/blob.hpp"
@@ -17,7 +19,7 @@ using caffe::Blob;
 using caffe::Caffe;
 using caffe::Datum;
 using caffe::Net;
-using boost::shared_ptr;
+using caffe::shared_ptr;
 using std::string;
 namespace db = caffe::db;
 
@@ -31,7 +33,9 @@ int main(int argc, char** argv) {
 
 template<typename Dtype>
 int feature_extraction_pipeline(int argc, char** argv) {
+#ifdef USE_GLOG
   ::google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
   const int num_required_args = 7;
   if (argc < num_required_args) {
     LOG(ERROR)<<
@@ -102,12 +106,20 @@ int feature_extraction_pipeline(int argc, char** argv) {
 
   std::string extract_feature_blob_names(argv[++arg_pos]);
   std::vector<std::string> blob_names;
+#ifdef USE_BOOST
   boost::split(blob_names, extract_feature_blob_names, boost::is_any_of(","));
+#else
+  caffe::string_split(&blob_names, extract_feature_blob_names, ",");
+#endif  // USE_BOOST
 
   std::string save_feature_dataset_names(argv[++arg_pos]);
   std::vector<std::string> dataset_names;
+#ifdef USE_BOOST
   boost::split(dataset_names, save_feature_dataset_names,
                boost::is_any_of(","));
+#else
+  caffe::string_split(&dataset_names, save_feature_dataset_names, ",");
+#endif  // USE_BOOST
   CHECK_EQ(blob_names.size(), dataset_names.size()) <<
       " the number of blob names and dataset names must be equal";
   size_t num_features = blob_names.size();

@@ -4,9 +4,14 @@
 #include <utility>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
+#ifdef USE_GFLAGS
 #include "gflags/gflags.h"
+#endif  // USE_GFLAGS
+#ifdef USE_GLOG
 #include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/db.hpp"
@@ -16,13 +21,15 @@ using namespace caffe;  // NOLINT(build/namespaces)
 
 using std::max;
 using std::pair;
-using boost::scoped_ptr;
 
+#ifdef USE_GFLAGS
 DEFINE_string(backend, "lmdb",
         "The backend {leveldb, lmdb} containing the images");
 
 int main(int argc, char** argv) {
+#ifdef USE_GLOG
   ::google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
 
 #ifdef USE_OPENCV
 #ifndef GFLAGS_GFLAGS_H_
@@ -121,3 +128,8 @@ int main(int argc, char** argv) {
 #endif
   return 0;
 }
+#else
+int main(int argc, char** argv) {
+  LOG(FATAL) << "Compile with gflags to use this.";
+}
+#endif  // requires gflags

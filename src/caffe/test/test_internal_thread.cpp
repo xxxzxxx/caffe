@@ -1,4 +1,8 @@
+#ifdef USE_GLOG
 #include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 #include "gtest/gtest.h"
 
 #include "caffe/internal_thread.hpp"

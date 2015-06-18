@@ -14,9 +14,14 @@
 #include <utility>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
+#ifdef USE_GFLAGS
 #include "gflags/gflags.h"
+#endif  // USE_GFLAGS
+#ifdef USE_GLOG
 #include "glog/logging.h"
+#else
+#include "caffe/util/glog_alternate.hpp"
+#endif  // USE_GLOG
 
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/db.hpp"
@@ -25,8 +30,8 @@
 
 using namespace caffe;  // NOLINT(build/namespaces)
 using std::pair;
-using boost::scoped_ptr;
 
+#ifdef USE_GFLAGS
 DEFINE_bool(gray, false,
     "When this option is on, treat images as grayscale ones");
 DEFINE_bool(shuffle, false,
@@ -44,7 +49,9 @@ DEFINE_string(encode_type, "",
 
 int main(int argc, char** argv) {
 #ifdef USE_OPENCV
+#ifdef USE_GLOG
   ::google::InitGoogleLogging(argv[0]);
+#endif  // USE_GLOG
 
 #ifndef GFLAGS_GFLAGS_H_
   namespace gflags = google;
@@ -151,6 +158,11 @@ int main(int argc, char** argv) {
   }
 #else
   LOG(FATAL) << "Compile with OpenCV to use this.";
-#endif
+#endif  // requires OpenCV
   return 0;
 }
+#else
+int main(int argc, char** argv) {
+  LOG(FATAL) << "Compile with gflags to use this.";
+}
+#endif  // requires gflags
