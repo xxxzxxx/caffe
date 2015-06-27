@@ -1,3 +1,4 @@
+#ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
 
 #include <stdint.h>
@@ -124,3 +125,4 @@ INSTANTIATE_CLASS(DataLayer);
 REGISTER_LAYER_CLASS(Data);
 
 }  // namespace caffe
+#endif  // requires OpenCV

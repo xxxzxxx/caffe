@@ -2889,6 +2889,7 @@ TEST_F(NetUpgradeTest, TestImageNet) {
   this->RunV1UpgradeTest(expected_v1_proto, expected_v2_proto);
 }  // NOLINT(readability/fn_size)
 
+#if defined (USE_OPENCV) && defined(USE_HDF5)
 TEST_F(NetUpgradeTest, TestUpgradeV1LayerType) {
   LayerParameter layer_param;
   shared_ptr<Layer<float> > layer;
@@ -2906,4 +2907,5 @@ TEST_F(NetUpgradeTest, TestUpgradeV1LayerType) {
   }
 }
 
+#endif  // requires OpenCV and hdf5
 }  // NOLINT(readability/fn_size)  // namespace caffe

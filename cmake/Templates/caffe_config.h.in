@@ -30,3 +30,10 @@
 
 /* Matlab */
 #cmakedefine HAVE_MATLAB
+
+/* IO libraries */
+#cmakedefine USE_OPENCV
+#cmakedefine USE_LMDB
+#cmakedefine USE_LEVELDB
+#cmakedefine USE_HDF5
+#cmakedefine USE_SNAPPY

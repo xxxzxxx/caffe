@@ -43,6 +43,7 @@ DEFINE_string(encode_type, "",
     "Optional: What type should we encode the image as ('png','jpg',...).");
 
 int main(int argc, char** argv) {
+#ifdef USE_OPENCV
   ::google::InitGoogleLogging(argv[0]);
 
 #ifndef GFLAGS_GFLAGS_H_
@@ -148,5 +149,8 @@ int main(int argc, char** argv) {
     txn->Commit();
     LOG(ERROR) << "Processed " << count << " files.";
   }
+#else
+  LOG(FATAL) << "Compile with OpenCV to use this.";
+#endif
   return 0;
 }

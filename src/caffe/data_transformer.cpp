@@ -1,4 +1,6 @@
+#ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
+#endif
 
 #include <string>
 #include <vector>
@@ -122,9 +124,11 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
   }
 }
 
+
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const Datum& datum,
                                        Blob<Dtype>* transformed_blob) {
+#ifdef USE_OPENCV
   // If datum is encoded, decoded and transform the cv::image.
   if (datum.encoded()) {
     CHECK(!(param_.force_color() && param_.force_gray()))
@@ -170,11 +174,15 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
 
   Dtype* transformed_data = transformed_blob->mutable_cpu_data();
   Transform(datum, transformed_data);
+#else
+  LOG(FATAL) << "Requires OpenCV";
+#endif
 }
 
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const vector<Datum> & datum_vector,
                                        Blob<Dtype>* transformed_blob) {
+#ifdef USE_OPENCV
   const int datum_num = datum_vector.size();
   const int num = transformed_blob->num();
   const int channels = transformed_blob->channels();
@@ -190,8 +198,12 @@ void DataTransformer<Dtype>::Transform(const vector<Datum> & datum_vector,
     uni_blob.set_cpu_data(transformed_blob->mutable_cpu_data() + offset);
     Transform(datum_vector[item_id], &uni_blob);
   }
+#else
+  LOG(FATAL) << "Requires OpenCV";
+#endif
 }
 
+#ifdef USE_OPENCV
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
                                        Blob<Dtype>* transformed_blob) {
@@ -313,6 +325,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
     }
   }
 }
+#endif  // requires OpenCV
 
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(Blob<Dtype>* input_blob,
@@ -427,6 +440,7 @@ void DataTransformer<Dtype>::Transform(Blob<Dtype>* input_blob,
   }
 }
 
+#ifdef USE_OPENCV
 template<typename Dtype>
 vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
   if (datum.encoded()) {
@@ -502,6 +516,7 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(
   shape[0] = num;
   return shape;
 }
+#endif
 
 template <typename Dtype>
 void DataTransformer<Dtype>::InitRand() {
