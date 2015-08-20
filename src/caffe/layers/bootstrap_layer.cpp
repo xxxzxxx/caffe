@@ -32,7 +32,7 @@ void BootstrapLayer<Dtype>::LayerSetUp(
   argmax_top_vec_.push_back(&p_label_);
   argmax_layer_->SetUp(softmax_top_vec_, argmax_top_vec_);
 
-  is_hard_mode_ = this->layer_param_.bootstrap_param().is_hard_mode();
+  is_hard_mode_ = this->layer_param_.bootstrap_param().mode() == BootstrapParameter_Mode_HARD;
   beta_ = this->layer_param_.bootstrap_param().beta();
 }
 

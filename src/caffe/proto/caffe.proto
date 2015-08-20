@@ -398,9 +398,13 @@ message ArgMaxParameter {
   optional uint32 top_k = 2 [default = 1];
 }
 
-// Message that stores parameters used by BootstrapLayer
+// Message that stores parameters used by BootstrapLayer and BootstrapLossLayer
 message BootstrapParameter {
-  optional bool is_hard_mode = 1 [default = true];
+  enum Mode {
+    HARD = 0;
+    SOFT = 1;
+  }
+  optional Mode mode = 1 [default = HARD];
   optional float beta = 2 [default = 1];
 }
 
