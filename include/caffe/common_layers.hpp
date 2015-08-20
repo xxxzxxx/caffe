@@ -284,7 +284,7 @@ class KNNLayer : public Layer<Dtype> {
   virtual inline const char* type() const { return "KNN"; }
   virtual inline int MinBottomBlobs() const { return 1; }
   virtual inline int MaxBottomBlobs() const { return 2; }
-  virtual inline int MaxTopBlobs() const { return 4; }
+  virtual inline int MaxTopBlobs() const { return 6; }
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,

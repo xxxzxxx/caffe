@@ -27,11 +27,14 @@ void KNNLayer<Dtype>::Reshape(
     CHECK_LE(top_k_, bottom[0]->num()-2)
         << "top_k must be less than or equal to (batch_size - 2).";
     CHECK_EQ(top.size(), 4);
+    // CHECK_EQ(top.size(), 6);
 
     top[0]->ReshapeLike(*bottom[0]);  // neighbors
     top[1]->ReshapeLike(*bottom[0]);  // non-neighbors
     top[2]->Reshape(label_shape);  // 1s, for neighbors
     top[3]->Reshape(label_shape);  // 0s, for non-neighbors
+    // top[4]->Reshape(label_shape);  // id for neighbors
+    // top[5]->Reshape(label_shape);  // id for non-neighbors
   } else {
     CHECK_LE(top_k_, bottom[0]->num())
         << "top_k must be less than or equal to batch_size.";
@@ -57,6 +60,8 @@ void KNNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     Dtype* top_non_neighbors = top[1]->mutable_cpu_data();
     Dtype* top_neighbor_labels = top[2]->mutable_cpu_data();
     Dtype* top_non_neighbor_labels = top[3]->mutable_cpu_data();
+    // Dtype* top_neighbor_idx = top[4]->mutable_cpu_data();
+    // Dtype* top_non_neighbor_idx = top[5]->mutable_cpu_data();
 
     // compute L2-distance matrix
     vector<vector<Dtype> > l2_dist_mat(batch_size);
@@ -100,6 +105,8 @@ void KNNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
       top_neighbor_labels[i] = Dtype(1);
       top_non_neighbor_labels[i] = Dtype(0);
+      // top_neighbor_idx[i] = n_idx;
+      // top_non_neighbor_idx[i] = nn_idx;
     }
   } else {
     const Dtype* l_data = bottom[0]->cpu_data();  // labeled data
