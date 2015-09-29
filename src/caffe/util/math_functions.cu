@@ -12,6 +12,83 @@
 
 namespace caffe {
 
+// Computes Y = H.G + X.(1 - G)
+
+template <typename Dtype>
+__global__ void kernel_gate_h_and_x_with_g(const int N, Dtype* H, const Dtype* X, Dtype* G, Dtype* Y) {
+  CUDA_KERNEL_LOOP(index, N) {
+    Y[index] = (H[index] * G[index]) + (X[index] * ((Dtype)1. - G[index]));
+  }
+}
+
+template <typename Dtype>
+void caffe_gpu_gate_h_and_x_with_g(const int N, Dtype* H, const Dtype* X, Dtype* G, Dtype* Y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  kernel_gate_h_and_x_with_g<Dtype><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, H, X, G, Y);
+}
+
+template void caffe_gpu_gate_h_and_x_with_g<float>(const int N,
+                                                   float* H, const float* X, float* G, float* Y);
+template void caffe_gpu_gate_h_and_x_with_g<double>(const int N,
+                                                    double* H, const double* X, double* G, double* Y);
+
+// Computes Y = A.(B - C)
+
+template <typename Dtype>
+__global__ void kernel_dot_with_diff(const int N, Dtype* A, const Dtype* B, const Dtype* C, Dtype* Y) {
+  CUDA_KERNEL_LOOP(index, N) {
+    Y[index] = A[index] * (B[index] - C[index]);
+  }
+}
+
+template <typename Dtype>
+void caffe_gpu_dot_with_diff(const int N, Dtype* A, const Dtype* B,
+                             const Dtype* C, Dtype* Y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  kernel_dot_with_diff<Dtype><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, A, B, C, Y);
+}
+
+template void caffe_gpu_dot_with_diff<float>(const int N, float* A, const float* B,
+                                             const float* C, float* Y);
+template void caffe_gpu_dot_with_diff<double>(const int N, double* A, const double* B,
+                                              const double* C, double* Y);
+
+// Computes Y = Y + A.(1 - B)
+
+template <typename Dtype>
+__global__ void kernel_dot_add_one_minus_b(const int N, const Dtype* A, const Dtype* B, Dtype* Y) {
+  CUDA_KERNEL_LOOP(index, N) {
+    Y[index] += A[index] * ((Dtype)1. - B[index]);
+  }
+}
+
+template <typename Dtype>
+void caffe_gpu_dot_add_one_minus_b(const int N, const Dtype* A, const Dtype* B, Dtype* Y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  kernel_dot_add_one_minus_b<Dtype><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, A, B, Y);
+}
+
+template void caffe_gpu_dot_add_one_minus_b<float>(const int N, const float* A, const float* B, float* Y);
+template void caffe_gpu_dot_add_one_minus_b<double>(const int N, const double* A, const double* B, double* Y);
+
+// elementwise multiply
+
+template <typename Dtype>
+__global__ void kernel_elem_multiply(const int N, const Dtype* A, const Dtype* B, Dtype* Y) {
+  CUDA_KERNEL_LOOP(index, N) {
+    Y[index] = A[index] * B[index];
+  }
+}
+
+template <typename Dtype>
+void caffe_gpu_elem_multiply(const int N, const Dtype* A, const Dtype* B, Dtype* Y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  kernel_elem_multiply<Dtype><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, A, B, Y);
+}
+
+template void caffe_gpu_elem_multiply<float>(const int N, const float* A, const float* B, float* Y);
+template void caffe_gpu_elem_multiply<double>(const int N, const double* A, const double* B, double* Y);
+
 template <>
 void caffe_gpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
