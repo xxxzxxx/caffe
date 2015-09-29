@@ -158,9 +158,11 @@ class XavierFiller : public Filler<Dtype> {
         FillerParameter_VarianceNorm_FAN_OUT) {
       n = fan_out;
     }
-    Dtype scale = sqrt(Dtype(3) / n);
-    caffe_rng_uniform<Dtype>(blob->count(), -scale, scale,
-        blob->mutable_cpu_data());
+    // Dtype scale = sqrt(Dtype(3) / n);
+    // caffe_rng_uniform<Dtype>(blob->count(), -scale, scale,
+    //     blob->mutable_cpu_data());
+    Dtype std = sqrt(Dtype(2) / n);
+    caffe_rng_gaussian<Dtype>(blob->count(), Dtype(0), std, blob->mutable_cpu_data());
     CHECK_EQ(this->filler_param_.sparse(), -1)
          << "Sparsity not supported by this Filler.";
   }
