@@ -55,6 +55,10 @@ function(caffe_generate_export_configs)
     set(HAVE_CUDA FALSE)
   endif()
 
+  if(USE_GLOG)
+    list(APPEND Caffe_DEFINITIONS -DUSE_GLOG)
+  endif()
+
   if(USE_OPENCV)
     list(APPEND Caffe_DEFINITIONS -DUSE_OPENCV)
   endif()
@@ -68,6 +72,10 @@ function(caffe_generate_export_configs)
 
   if(USE_LEVELDB)
     list(APPEND Caffe_DEFINITIONS -DUSE_LEVELDB)
+  endif()
+
+  if(USE_HDF5)
+    list(APPEND Caffe_DEFINITIONS -DUSE_HDF5)
   endif()
 
   if(NOT HAVE_CUDNN)

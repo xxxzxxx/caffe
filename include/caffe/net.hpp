@@ -203,8 +203,9 @@ class Net {
   const map<string, int_tp>& param_names_index() const {
     return param_names_index_;
   }
-  inline const vector<int_tp>& param_owners() const {
-    return param_owners_;
+  inline const vector<int>& param_owners() const { return param_owners_; }
+  inline const vector<string>& param_display_names() const {
+    return param_display_names_;
   }
   inline const vector<string>& param_display_names() const {
     return param_display_names_;
