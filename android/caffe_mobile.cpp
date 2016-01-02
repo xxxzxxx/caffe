@@ -54,14 +54,33 @@ CaffeMobile *CaffeMobile::Get(const string &model_path,
   return caffe_mobile_;
 }
 
+// Parse GPU ids or use all available devices
+bool has_gpu() {
+  int count = 0;
+#ifndef CPU_ONLY
+  count = Caffe::EnumerateDevices(false);
+#else
+  NO_GPU;
+#endif
+  return count != 0;
+}
+
 CaffeMobile::CaffeMobile(const string &model_path, const string &weights_path) {
   CHECK_GT(model_path.size(), 0) << "Need a model definition to score.";
   CHECK_GT(weights_path.size(), 0) << "Need model weights to score.";
 
-  Caffe::set_mode(Caffe::CPU);
+  if (has_gpu()) {
+#ifndef CPU_ONLY
+    Caffe::set_mode(Caffe::GPU);
+    Caffe::SetDevice(0);
+#endif  // !CPU_ONLY
+  } else {
+    Caffe::set_mode(Caffe::CPU);
+  }
 
+  // Instantiate the caffe net.
   clock_t t_start = clock();
-  net_.reset(new Net<float>(model_path, caffe::TEST));
+  net_.reset(new Net<float>(model_path, caffe::TEST, Caffe::GetDefaultDevice()));
   net_->CopyTrainedLayersFrom(weights_path);
   clock_t t_end = clock();
   VLOG(1) << "Loading time: " << 1000.0 * (t_end - t_start) / CLOCKS_PER_SEC
