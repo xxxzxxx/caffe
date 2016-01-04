@@ -16,7 +16,7 @@ public:
   ~CaffeMobile();
 
   static CaffeMobile *Get();
-  static CaffeMobile *Get(const string &model_path, const string &weights_path);
+  static CaffeMobile *Get(const string &model_path, const string &weights_path, const int device_id=-1);
 
   void SetMean(const string &mean_file);
 
@@ -34,7 +34,7 @@ private:
   static string model_path_;
   static string weights_path_;
 
-  CaffeMobile(const string &model_path, const string &weights_path);
+  CaffeMobile(const string &model_path, const string &weights_path, const int device_id=-1);
 
   void Preprocess(const cv::Mat &img, vector<cv::Mat> *input_channels);
 

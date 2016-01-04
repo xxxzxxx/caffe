@@ -44,10 +44,11 @@ CaffeMobile *CaffeMobile::Get() {
 }
 
 CaffeMobile *CaffeMobile::Get(const string &model_path,
-                              const string &weights_path) {
+                              const string &weights_path,
+                              const int device_id) {
   if (!caffe_mobile_ || model_path != model_path_ ||
       weights_path != weights_path_) {
-    caffe_mobile_ = new CaffeMobile(model_path, weights_path);
+    caffe_mobile_ = new CaffeMobile(model_path, weights_path, device_id);
     model_path_ = model_path;
     weights_path_ = weights_path;
   }
@@ -55,26 +56,34 @@ CaffeMobile *CaffeMobile::Get(const string &model_path,
 }
 
 // Parse GPU ids or use all available devices
-bool has_gpu() {
+static void get_gpus(vector<int>* gpus) {
   int count = 0;
 #ifndef CPU_ONLY
-  count = Caffe::EnumerateDevices(false);
+  count = Caffe::EnumerateDevices(true);
 #else
   NO_GPU;
 #endif
-  return count != 0;
+  for (int i = 0; i < count; ++i) {
+    gpus->push_back(i);
+  }
 }
 
-CaffeMobile::CaffeMobile(const string &model_path, const string &weights_path) {
+CaffeMobile::CaffeMobile(const string &model_path, const string &weights_path, const int device_id) {
   CHECK_GT(model_path.size(), 0) << "Need a model definition to score.";
   CHECK_GT(weights_path.size(), 0) << "Need model weights to score.";
 
-  if (has_gpu()) {
+  // Set device id and mode
+  vector<int> gpus;
+  get_gpus(&gpus);
+  if (device_id >= 0 && gpus.size() != 0) {
 #ifndef CPU_ONLY
+    LOG(INFO) << "Use GPU with device ID " << device_id;
     Caffe::set_mode(Caffe::GPU);
-    Caffe::SetDevice(0);
+    Caffe::SetDevices(gpus);
+    Caffe::SelectDevice(device_id, true);
 #endif  // !CPU_ONLY
   } else {
+    LOG(INFO) << "Use CPU.";
     Caffe::set_mode(Caffe::CPU);
   }
 
