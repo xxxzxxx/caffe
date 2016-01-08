@@ -117,12 +117,12 @@ void SoftmaxWithMappingLabelLossLayer<Dtype>::Backward_cpu(
       int l = static_cast<int>(label[i]);
       for (int j = 0; j < K_; ++j) {
         bottom_diff[i * K_ + j] -= (matrix[l * K_ + j] *
-				                    prob_data[i * K_ + j] /
-			                        mapped_prob_data[i * N_ + l]);
+            prob_data[i * K_ + j] /
+            mapped_prob_data[i * N_ + l]);
       }
     }
-	const Dtype loss_weight = top[0]->cpu_diff()[0];
-	caffe_scal(prob_.count(), loss_weight / M_, bottom_diff);
+    const Dtype loss_weight = top[0]->cpu_diff()[0];
+    caffe_scal(prob_.count(), loss_weight / M_, bottom_diff);
   }
 }
 

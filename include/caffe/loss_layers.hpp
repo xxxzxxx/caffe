@@ -839,6 +839,52 @@ class SoftmaxWithMappingLabelLossLayer : public LossLayer<Dtype> {
 };
 
 template <typename Dtype>
+class SoftmaxWithPseudoLabelLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit SoftmaxWithPseudoLabelLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "SoftmaxWithPseudoLabelLoss"; }
+  virtual inline int ExactNumBottomBlobs() const { return -1; }
+  virtual inline int MinBottomBlobs() const { return 2; }
+  virtual inline int MaxBottomBlobs() const { return 3; }
+  virtual inline int ExactNumTopBlobs() const { return -1; }
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int MaxTopBlobs() const { return 2; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+
+  shared_ptr<Layer<Dtype> > softmax_layer_;
+  Blob<Dtype> prob_;
+  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  vector<Blob<Dtype>*> softmax_top_vec_;
+  shared_ptr<Layer<Dtype> > argmax_layer_;
+  Blob<Dtype> p_label_;
+  vector<Blob<Dtype>*> argmax_top_vec_;
+  bool has_ignore_label_;
+  int ignore_label_;
+  bool normalize_;
+
+  int softmax_axis_, outer_num_, inner_num_;
+  Dtype real_weight_;
+  Dtype pseudo_weight_;
+
+  // deterministic annealing
+  int T1_, T2_, t_;
+  Dtype alpha_;
+  Dtype base_pseudo_weight_;
+};
+
+template <typename Dtype>
 class BootstrapLayer : public Layer<Dtype> {
  public:
   explicit BootstrapLayer(const LayerParameter& param)

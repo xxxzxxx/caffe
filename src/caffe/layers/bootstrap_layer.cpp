@@ -75,8 +75,8 @@ void BootstrapLayer<Dtype>::Forward_cpu(
     for (int i = 0; i < batch_size; ++i) {
       const int n_label_value = static_cast<int>(n_label[i]);
       const int p_label_value = static_cast<int>(p_label[i]);
-      p_bootstrap[i * dim + p_label_value] += (1 - beta[p_label_value]);
       p_bootstrap[i * dim + n_label_value] += beta[p_label_value];
+      p_bootstrap[i * dim + p_label_value] += (1 - beta[p_label_value]);
     }
   } else {
     for (int i = 0; i < batch_size; ++i) {

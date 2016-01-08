@@ -308,7 +308,7 @@ message ParamSpec {
 // Update the next available ID when you add a new LayerParameter field.
 //
 // LayerParameter next available layer-specific ID: 139 (last added: tile_param)
-// LayerParameter next available layer-specific ID: 144 (last added: highway_conv_param)
+// LayerParameter next available layer-specific ID: 145 (last added: softmax_pseudo_label_loss_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -391,6 +391,7 @@ message LayerParameter {
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
   optional SoftmaxMappingLabelLossParameter softmax_mapping_label_loss_param = 142;
+  optional SoftmaxPseudoLabelLossParameter softmax_pseudo_label_loss_param = 144;
   optional SPPParameter spp_param = 132;
   optional SliceParameter slice_param = 126;
   optional TanHParameter tanh_param = 127;
@@ -1010,6 +1011,13 @@ message SoftmaxParameter {
 // Message that stores parameters used by SoftmaxWithMappingLabelLossLayer
 message SoftmaxMappingLabelLossParameter {
   optional FillerParameter matrix_filler = 1;
+}
+
+// Message that stores parameters used by SoftmaxWithPseudoLabelLossLayer
+message SoftmaxPseudoLabelLossParameter {
+  optional int32 t1 = 1 [default = 0];
+  optional int32 t2 = 2 [default = 1];
+  optional float alpha = 3 [default = 1];
 }
 
 message TanHParameter {

@@ -86,10 +86,10 @@ void BootstrapLossLayer<Dtype>::Forward_cpu(
       DCHECK_LT(n_label_value, prob_.shape(softmax_axis_));
       for (int k = 0; k < bottom[0]->channels(); ++k) {
         Dtype c = is_hard_mode_
-                  ? (beta_ * (k == n_label_value) +
-                    (1 - beta_) * (k == p_label_value))
-                  : (beta_ * (k == n_label_value) +
-                    (1 - beta_) * prob_data[i * dim + k * inner_num_ + j]);
+                ? (beta_ * (k == n_label_value) +
+                  (1 - beta_) * (k == p_label_value))
+                : (beta_ * (k == n_label_value) +
+                  (1 - beta_) * prob_data[i * dim + k * inner_num_ + j]);
         loss -= c * log(std::max(prob_data[i * dim + k * inner_num_ + j],
                                  Dtype(FLT_MIN)));
       }
