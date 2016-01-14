@@ -38,9 +38,13 @@ typedef Matrix<double, Dynamic, Dynamic, RowMajor> MatXd;
 
 #else
 
+#ifndef USE_QSML
 extern "C" {
 #include <cblas.h>
 }
+#else
+#include <qblas_cblas.h>
+#endif  // !USE_QSML
 
 #endif  // USE_EIGEN
 
@@ -111,7 +115,7 @@ DEFINE_VSL_BINARY_FUNC(Sub, y[i] = a[i] - b[i]);
 DEFINE_VSL_BINARY_FUNC(Mul, y[i] = a[i] * b[i]);
 DEFINE_VSL_BINARY_FUNC(Div, y[i] = a[i] / b[i]);
 
-#ifndef USE_EIGEN
+#if !defined(USE_EIGEN) && !defined(USE_QSML)
 
 // In addition, MKL comes with an additional function axpby that is not present
 // in standard blas. We will simply use a two-step (inefficient, of course) way
@@ -129,7 +133,7 @@ inline void cblas_daxpby(const int N, const double alpha, const double* X,
   cblas_daxpy(N, alpha, X, incX, Y, incY);
 }
 
-#endif  // USE_EIGEN
+#endif  // !USE_EIGEN && !USE_QSML
 
 #endif  // USE_MKL
 #endif  // CAFFE_UTIL_MKL_ALTERNATE_H_

@@ -186,7 +186,7 @@ class CERES_EXPORT MessageLogger {
   ~MessageLogger() {
     stream_ << "\n";
 
-#ifdef ANDROID
+#ifdef _ANDROID
     static const int android_log_levels[] = {
         ANDROID_LOG_FATAL,    // LOG(FATAL)
         ANDROID_LOG_ERROR,    // LOG(ERROR)

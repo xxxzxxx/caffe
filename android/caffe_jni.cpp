@@ -7,7 +7,7 @@
 #ifdef USE_EIGEN
 #include <omp.h>
 #else
-#include <cblas.h>
+//#include <cblas.h>
 #endif
 
 #include "caffe/caffe.hpp"
@@ -41,7 +41,7 @@ Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setNumThreads(
 #ifdef USE_EIGEN
   omp_set_num_threads(num_threads);
 #else
-  openblas_set_num_threads(num_threads);
+  //openblas_set_num_threads(num_threads);
 #endif
 }
 
