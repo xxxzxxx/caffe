@@ -31,6 +31,9 @@
 /* Matlab */
 #cmakedefine HAVE_MATLAB
 
+/* glog */
+#cmakedefine USE_GLOG
+
 /* IO libraries */
 #cmakedefine USE_OPENCV
 #cmakedefine USE_LEVELDB

@@ -45,7 +45,7 @@ COMMON_FLAGS += -DCAFFE_VERSION=$(DYNAMIC_VERSION_MAJOR).$(DYNAMIC_VERSION_MINOR
 # Get all source files
 ##############################
 # CXX_SRCS are the source files excluding the test ones.
-CXX_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cpp" -name "*.cpp")
+CXX_SRCS += $(shell find src/$(PROJECT) ! -name "test_*.cpp" -name "*.cpp")
 # CU_SRCS are the cuda source files
 CU_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cu" -name "*.cu")
 # TEST_SRCS are the test source files
@@ -178,8 +178,14 @@ ifneq ($(CPU_ONLY), 1)
 	LIBRARIES := cudart cublas curand
 endif
 
-LIBRARIES += glog gflags protobuf boost_system boost_filesystem m
-
+USE_GLOG ?= 1
+ifeq ($(USE_GLOG), 1)
+	LIBRARIES += glog gflags protobuf boost_system boost_filesystem m
+else
+else
+	CXX_SRCS := ./src/ceres/internal/miniglog/glog/logging.cpp
+	INCLUDE_DIRS := ./include/ceres/internal/miniglog/ $(INCLUDE_DIRS)
+endif
 # handle IO dependencies
 USE_LEVELDB ?= 1
 USE_LMDB ?= 1
@@ -332,6 +338,11 @@ ifeq ($(USE_CUDNN), 1)
 	COMMON_FLAGS += -DUSE_CUDNN
 endif
 
+# glog configuration.
+ifeq ($(USE_GLOG), 1)
+ 	COMMON_FLAGS += -DUSE_GLOG
+endif
+
 # configure IO libraries
 ifeq ($(USE_OPENCV), 1)
 	COMMON_FLAGS += -DUSE_OPENCV
@@ -374,6 +385,11 @@ ifeq ($(BLAS), mkl)
 	MKLROOT ?= /opt/intel/mkl
 	BLAS_INCLUDE ?= $(MKLROOT)/include
 	BLAS_LIB ?= $(MKLROOT)/lib $(MKLROOT)/lib/intel64
+else ifeq ($(BLAS), eigen)
+	# Eigen
+	COMMON_FLAGS += -DUSE_EIGEN
+	EIGEN_DIR ?= /opt/eigen
+	BLAS_INCLUDE ?= $(EIGEN_DIR)	
 else ifeq ($(BLAS), open)
 	# OpenBLAS
 	LIBRARIES += openblas
