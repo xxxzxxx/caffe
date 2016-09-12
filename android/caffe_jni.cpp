@@ -4,7 +4,11 @@
 #include <string>
 #include <vector>
 
+#ifdef USE_EIGEN
+#include <omp.h>
+#else
 #include <cblas.h>
+#endif
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -45,30 +49,58 @@ string bytes2string(JNIEnv *env, jbyteArray buf) {
 }
 
 cv::Mat imgbuf2mat(JNIEnv *env, jbyteArray buf, int width, int height) {
-  jbyte *ptr = env->GetByteArrayElements(buf, 0);
-  cv::Mat img(height + height / 2, width, CV_8UC1, (unsigned char *)ptr);
-  cv::cvtColor(img, img, CV_YUV2RGBA_NV21);
-  env->ReleaseByteArrayElements(buf, ptr, 0);
-  return img;
+    jbyte *ptr = env->GetByteArrayElements(buf, 0);
+  const int byte_length = env->GetArrayLength(buf);
+  const int yuv_length = height + height / 2 * width;
+  const int rgb_length = height * width * 3;
+  const int rgba_length = height * width * 4;
+  //YUV
+  if (byte_length == yuv_length)
+  {
+    cv::Mat img(height + height / 2, width, CV_8UC1, (unsigned char *)ptr);
+    cv::cvtColor(img, img, CV_YUV2RGBA_NV21);
+    env->ReleaseByteArrayElements(buf, ptr, 0);
+    return img;
+  }
+  //RGB
+  else if (byte_length == rgb_length)
+  {
+    cv::Mat img(height, width, CV_8UC3, (unsigned char *)ptr);
+    cv::cvtColor(img, img, CV_RGB2RGBA);
+    env->ReleaseByteArrayElements(buf, ptr, 0);
+    return img;
+  }
+  //RGBA
+  else if (byte_length == rgba_length)
+  {
+    return cv::Mat(height, width, CV_8UC4, (unsigned char *)ptr);
+  }
+  else
+  {
+    throw -1;
+  }
 }
-
 cv::Mat getImage(JNIEnv *env, jbyteArray buf, int width, int height) {
   return (width == 0 && height == 0) ? cv::imread(bytes2string(env, buf), -1)
                                      : imgbuf2mat(env, buf, width, height);
 }
 
 JNIEXPORT void JNICALL
-Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setNumThreads(JNIEnv *env,
+Java_com_sh1r0_caffe_android_lib_CaffeMobile_setNumThreads(JNIEnv *env,
                                                              jobject thiz,
                                                              jint numThreads) {
   int num_threads = numThreads;
-  openblas_set_num_threads(num_threads);
-}
+ #ifdef USE_EIGEN
+   omp_set_num_threads(num_threads);
+ #else
+   openblas_set_num_threads(num_threads);
+ #endif
+ }
 
-JNIEXPORT void JNICALL Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_enableLog(
+JNIEXPORT void JNICALL Java_com_sh1r0_caffe_android_lib_CaffeMobile_enableLog(
     JNIEnv *env, jobject thiz, jboolean enabled) {}
 
-JNIEXPORT jint JNICALL Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_loadModel(
+JNIEXPORT jint JNICALL Java_com_sh1r0_caffe_android_lib_CaffeMobile_loadModel(
     JNIEnv *env, jobject thiz, jstring modelPath, jstring weightsPath) {
   CaffeMobile::Get(jstring2string(env, modelPath),
                    jstring2string(env, weightsPath));
@@ -76,14 +108,14 @@ JNIEXPORT jint JNICALL Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_loadModel(
 }
 
 JNIEXPORT void JNICALL
-Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setMeanWithMeanFile(
+Java_com_sh1r0_caffe_android_lib_CaffeMobile_setMeanWithMeanFile(
     JNIEnv *env, jobject thiz, jstring meanFile) {
   CaffeMobile *caffe_mobile = CaffeMobile::Get();
   caffe_mobile->SetMean(jstring2string(env, meanFile));
 }
 
 JNIEXPORT void JNICALL
-Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setMeanWithMeanValues(
+Java_com_sh1r0_caffe_android_lib_CaffeMobile_setMeanWithMeanValues(
     JNIEnv *env, jobject thiz, jfloatArray meanValues) {
   CaffeMobile *caffe_mobile = CaffeMobile::Get();
   int num_channels = env->GetArrayLength(meanValues);
@@ -92,7 +124,7 @@ Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setMeanWithMeanValues(
   caffe_mobile->SetMean(mean_values);
 }
 
-JNIEXPORT void JNICALL Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setScale(
+JNIEXPORT void JNICALL Java_com_sh1r0_caffe_android_lib_CaffeMobile_setScale(
     JNIEnv *env, jobject thiz, jfloat scale) {
   CaffeMobile *caffe_mobile = CaffeMobile::Get();
   caffe_mobile->SetScale(scale);
@@ -103,7 +135,7 @@ JNIEXPORT void JNICALL Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_setScale(
  * (str.getBytes("US-ASCII")) which contains the img path
  */
 JNIEXPORT jfloatArray JNICALL
-Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_getConfidenceScore(
+Java_com_sh1r0_caffe_android_lib_CaffeMobile_getConfidenceScore(
     JNIEnv *env, jobject thiz, jbyteArray buf, jint width, jint height) {
   CaffeMobile *caffe_mobile = CaffeMobile::Get();
   vector<float> conf_score =
@@ -124,7 +156,7 @@ Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_getConfidenceScore(
  * (str.getBytes("US-ASCII")) which contains the img path
  */
 JNIEXPORT jintArray JNICALL
-Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_predictImage(
+Java_com_sh1r0_caffe_android_lib_CaffeMobile_predictImage(
     JNIEnv *env, jobject thiz, jbyteArray buf, jint width, jint height,
     jint k) {
   CaffeMobile *caffe_mobile = CaffeMobile::Get();
@@ -146,7 +178,7 @@ Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_predictImage(
  * (str.getBytes("US-ASCII")) which contains the img path
  */
 JNIEXPORT jobjectArray JNICALL
-Java_com_sh1r0_caffe_1android_1lib_CaffeMobile_extractFeatures(
+Java_com_sh1r0_caffe_android_lib_CaffeMobile_extractFeatures(
     JNIEnv *env, jobject thiz, jbyteArray buf, jint width, jint height,
     jstring blobNames) {
   CaffeMobile *caffe_mobile = CaffeMobile::Get();
@@ -176,9 +208,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     return result;
   }
 
+#if defined(USE_GLOG)
   FLAGS_redirecttologcat = true;
   FLAGS_android_logcat_tag = "caffe_jni";
-
+#endif
   return JNI_VERSION_1_6;
 }
 

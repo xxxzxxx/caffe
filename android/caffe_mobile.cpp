@@ -55,8 +55,8 @@ CaffeMobile *CaffeMobile::Get(const string &model_path,
 }
 
 CaffeMobile::CaffeMobile(const string &model_path, const string &weights_path) {
-  CHECK_GT(model_path.size(), 0) << "Need a model definition to score.";
-  CHECK_GT(weights_path.size(), 0) << "Need model weights to score.";
+//  CHECK_GT(model_path.size(), 0) << "Need a model definition to score.";
+//  CHECK_GT(weights_path.size(), 0) << "Need model weights to score.";
 
   Caffe::set_mode(Caffe::CPU);
 
