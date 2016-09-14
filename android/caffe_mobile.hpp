@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "caffe/caffe.hpp"
 #include <opencv2/core/core.hpp>
 
@@ -13,42 +14,38 @@ namespace caffe {
 
 class CaffeMobile {
 public:
-  ~CaffeMobile();
+  typedef size_t identity_t;
 
-  static CaffeMobile *Get();
-  static CaffeMobile *Get(const string &model_path, const string &weights_path);
+public:
+  CaffeMobile() = default;
+  virtual ~CaffeMobile() = default;
 
+public:
+  static identity_t PutStoreInstance(std::shared_ptr<CaffeMobile> &target);
+  static std::shared_ptr<CaffeMobile> FindStoredInstance(const identity_t &identity);
+  static void EraseStoredInstance(const identity_t &target);
+  static void EraseStoredInstance(const std::shared_ptr<CaffeMobile> &target);
+
+public:
   void SetMean(const string &mean_file);
-
   void SetMean(const vector<float> &mean_values);
-
   void SetScale(const float scale);
-
   vector<float> GetConfidenceScore(const cv::Mat &img);
-
   vector<int> PredictTopK(const cv::Mat &img, int k);
-
-  vector<vector<float>> ExtractFeatures(const cv::Mat &img,
-                                        const string &str_blob_names);
+  vector<vector<float>> ExtractFeatures(const cv::Mat &img,const string &str_blob_names);
+  void LoadModule(const string &model_path, const string &weights_path);
 
 private:
-  static CaffeMobile *caffe_mobile_;
-  static string model_path_;
-  static string weights_path_;
-
-  CaffeMobile(const string &model_path, const string &weights_path);
-
   void Preprocess(const cv::Mat &img, vector<cv::Mat> *input_channels);
-
   void WrapInputLayer(std::vector<cv::Mat> *input_channels);
-
   vector<float> Forward(const cv::Mat &img);
 
-  shared_ptr<Net<float>> net_;
-  cv::Size input_geometry_;
-  int num_channels_;
-  cv::Mat mean_;
-  float scale_;
+private:
+  shared_ptr<Net<float>> net;
+  cv::Size input_geometry;
+  int num_channels;
+  cv::Mat mean;
+  float scale;
 };
 
 } // namespace caffe
